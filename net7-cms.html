@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NET7 — Content Manager</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4FF;color:#0D1B2A;min-height:100vh}
+input,textarea,select{font-family:inherit}
+img{display:block;max-width:100%}
+.cms-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:#0D1B2A;color:#fff;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar__logo{padding:20px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+.sidebar__logo-mark{width:36px;height:36px;background:#1A6BFF;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar__logo-text{font-size:14px;font-weight:700;line-height:1.2}
+.sidebar__logo-sub{font-size:11px;color:rgba(255,255,255,.4)}
+.sidebar__nav{padding:10px 0;flex:1}
+.sidebar__section{padding:8px 20px 3px;font-size:10px;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.3);text-transform:uppercase;margin-top:6px}
+.sidebar__link{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);cursor:pointer;border-left:3px solid transparent;transition:all .15s;text-decoration:none}
+.sidebar__link:hover{background:rgba(255,255,255,.06);color:#fff}
+.sidebar__link.active{background:rgba(26,107,255,.18);color:#fff;border-left-color:#1A6BFF;font-weight:600}
+.sidebar__link svg{flex-shrink:0;opacity:.7}
+.sidebar__link.active svg{opacity:1}
+
+/* Unsaved indicator dot — shown on sidebar link when panel has edits */
+.sidebar__link .unsaved-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#F59E0B;
+  margin-left:auto;flex-shrink:0;
+  display:none;
+  box-shadow:0 0 0 2px rgba(245,158,11,.25);
+  animation:pulseDot 2s ease-in-out infinite;
+}
+.sidebar__link.has-changes .unsaved-dot{display:block}
+.sidebar__link.has-changes{color:#fff}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 0 2px rgba(245,158,11,.25)}50%{box-shadow:0 0 0 4px rgba(245,158,11,.15)}}
+.sidebar__footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.3)}
+.cms-main{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #E8EDF7;padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar__title{font-size:15px;font-weight:700;color:#0D1B2A}
+.topbar__actions{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-primary{background:#1A6BFF;color:#fff}.btn-primary:hover{background:#1452CC}
+.btn-success{background:#10b981;color:#fff}.btn-success:hover{background:#059669}
+.btn-outline{background:#fff;color:#1A6BFF;border:1.5px solid #1A6BFF}.btn-outline:hover{background:#EEF3FF}
+.btn-preview{background:#7C3AED;color:#fff}.btn-preview:hover{background:#6D28D9}
+.btn-sm{padding:5px 10px;font-size:12px}
+.cms-content{padding:24px 28px;flex:1}
+.panel{display:none}.panel.active{display:block}
+.page-header{margin-bottom:20px}
+.page-header h1{font-size:19px;font-weight:800;color:#0D1B2A;margin-bottom:3px}
+.page-header p{font-size:13px;color:#8A96A6}
+.status-bar{background:#fff;border:1px solid #E8EDF7;border-radius:10px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#D0D9E8;flex-shrink:0}
+.status-dot.loaded{background:#10b981}.status-dot.unsaved{background:#F59E0B}
+.status-text{font-size:13px;color:#5A6272;flex:1}
+.status-filename{font-size:12px;font-weight:600;color:#1A6BFF;font-family:monospace}
+.card{background:#fff;border:1px solid #E8EDF7;border-radius:12px;margin-bottom:16px;overflow:hidden}
+.card__header{padding:14px 18px;border-bottom:1px solid #F0F4FF;display:flex;align-items:center;justify-content:space-between}
+.card__header-left{display:flex;align-items:center;gap:10px}
+.card__icon{width:30px;height:30px;border-radius:7px;background:#EEF3FF;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card__title{font-size:13px;font-weight:700;color:#0D1B2A}
+.card__subtitle{font-size:11px;color:#8A96A6;margin-top:1px}
+
+/* ── Preview Modal ── */
+.preview-overlay{
+  display:none;position:fixed;inset:0;z-index:1000;
+  background:rgba(10,15,30,.75);backdrop-filter:blur(4px);
+  flex-direction:column;
+}
+.preview-overlay.open{display:flex}
+.preview-topbar{
+  background:#0D1B2A;height:52px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;gap:12px;
+}
+.preview-topbar__left{display:flex;align-items:center;gap:10px}
+.preview-topbar__title{font-size:13px;font-weight:700;color:#fff}
+.preview-topbar__badge{font-size:11px;color:rgba(255,255,255,.45);background:rgba(255,255,255,.08);padding:3px 10px;border-radius:20px}
+.preview-device-btns{display:flex;gap:4px}
+.preview-device-btn{
+  width:32px;height:32px;border-radius:7px;border:none;cursor:pointer;
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.preview-device-btn:hover,.preview-device-btn.active{background:#1A6BFF;color:#fff}
+.preview-topbar__right{display:flex;align-items:center;gap:8px}
+.preview-frame-wrap{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:16px;overflow:hidden;transition:all .3s;
+}
+.preview-frame-wrap.mobile{padding:24px}
+.preview-frame-wrap.tablet{padding:20px}
+.preview-iframe{
+  width:100%;height:100%;border:none;
+  border-radius:8px;background:#fff;
+  box-shadow:0 8px 48px rgba(0,0,0,.4);
+  transition:all .35s cubic-bezier(.22,1,.36,1);
+}
+.preview-frame-wrap.mobile .preview-iframe{
+  width:390px;max-width:100%;
+  border-radius:32px;
+  box-shadow:0 0 0 10px #1a1a2e,0 24px 60px rgba(0,0,0,.6);
+}
+.preview-frame-wrap.tablet .preview-iframe{
+  width:820px;max-width:100%;
+  border-radius:16px;
+  box-shadow:0 0 0 8px #1a1a2e,0 20px 48px rgba(0,0,0,.5);
+}
+.preview-loading{
+  position:absolute;inset:0;background:rgba(10,15,30,.6);
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;
+  border-radius:8px;
+}
+.preview-loading.show{display:flex}
+.preview-spinner{
+  width:36px;height:36px;border:3px solid rgba(255,255,255,.15);
+  border-top-color:#1A6BFF;border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.card__body{padding:18px}
+.field{margin-bottom:14px}.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:11px;font-weight:700;color:#5A6272;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field textarea,.field select{width:100%;padding:9px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;color:#0D1B2A;outline:none;transition:border-color .15s;background:#FAFBFF}
+.field input:focus,.field textarea:focus{border-color:#1A6BFF;background:#fff}
+.field textarea{resize:vertical;min-height:72px;line-height:1.6}
+.field-hint{font-size:11px;color:#8A96A6;margin-top:3px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.section-label{font-size:11px;font-weight:700;color:#8A96A6;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:4px}
+.divider{height:1px;background:#F0F4FF;margin:16px 0}
+.img-upload{border:2px dashed #D8E2F4;border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;background:#FAFBFF;position:relative}
+.img-upload:hover{border-color:#1A6BFF;background:#F0F4FF}
+.img-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload__preview{width:100%;max-height:120px;object-fit:contain;border-radius:6px;margin-bottom:8px}
+.img-upload__label{font-size:13px;font-weight:600;color:#1A6BFF}
+.img-upload__sub{font-size:11px;color:#8A96A6;margin-top:2px}
+.img-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.img-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.faq-editor{display:flex;flex-direction:column;gap:10px}
+.faq-editor-item{background:#FAFBFF;border:1.5px solid #E8EDF7;border-radius:10px;overflow:hidden}
+.faq-editor-item__header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none;background:#F4F7FC}
+.faq-editor-item__num{font-size:11px;font-weight:800;color:#1A6BFF;width:20px;flex-shrink:0}
+.faq-editor-item__q{flex:1;font-size:13px;font-weight:600;color:#0D1B2A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.faq-editor-item__toggle{color:#8A96A6;transition:transform .2s;flex-shrink:0}
+.faq-editor-item.open .faq-editor-item__toggle{transform:rotate(180deg)}
+.faq-editor-item__body{display:none;padding:12px}
+.faq-editor-item.open .faq-editor-item__body{display:block}
+.steps-editor{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.step-editor-item{background:#F4F7FC;border:1.5px solid #E8EDF7;border-radius:10px;padding:12px}
+.step-editor-item__num{font-size:11px;font-weight:800;color:#1A6BFF;margin-bottom:8px}
+.stats-editor{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat-editor-item{background:#F4F7FC;border:1.5px solid #E8EDF7;border-radius:10px;padding:12px}
+.pricing-editor{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pricing-plan-item{background:#F4F7FC;border:1.5px solid #E8EDF7;border-radius:10px;padding:14px}
+.pricing-plan-item__name{font-size:12px;font-weight:800;color:#1A6BFF;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em}
+.feat-editor{display:flex;flex-direction:column;gap:8px}
+.feat-editor-item{background:#F4F7FC;border:1.5px solid #E8EDF7;border-radius:8px;overflow:hidden}
+.feat-editor-item__header{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;background:#EAEFF8}
+.feat-editor-item__num{font-size:11px;font-weight:800;color:#1A6BFF;width:18px;flex-shrink:0}
+.feat-editor-item__title{flex:1;font-size:12px;font-weight:600;color:#0D1B2A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feat-editor-item__body{display:none;padding:10px}
+.feat-editor-item.open .feat-editor-item__body{display:block}
+.feat-editor-item__toggle{color:#8A96A6;transition:transform .2s;flex-shrink:0}
+.feat-editor-item.open .feat-editor-item__toggle{transform:rotate(180deg)}
+.legal-editor{display:flex;flex-direction:column;gap:10px}
+.legal-item{background:#F4F7FC;border:1.5px solid #E8EDF7;border-radius:10px;overflow:hidden}
+.legal-item__header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:#EAEFF8}
+.legal-item__title{flex:1;font-size:13px;font-weight:600;color:#0D1B2A}
+.legal-item__toggle{color:#8A96A6;transition:transform .2s}
+.legal-item.open .legal-item__toggle{transform:rotate(180deg)}
+.legal-item__body{display:none;padding:14px}
+.legal-item.open .legal-item__body{display:block}
+.howto{background:linear-gradient(135deg,#EEF3FF,#F0F4FF);border:1px solid #D8E2F4;border-radius:10px;padding:16px;margin-bottom:18px}
+.howto h3{font-size:13px;font-weight:700;color:#1A6BFF;margin-bottom:8px}
+.howto ol{padding-left:16px;display:flex;flex-direction:column;gap:5px}
+.howto li{font-size:13px;color:#5A6272;line-height:1.5}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-blue{background:#EEF3FF;color:#1A6BFF}
+.toast{position:fixed;bottom:24px;right:24px;background:#0D1B2A;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.22,1,.36,1);z-index:9999}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ── Apply Changes floating bar ── */
+.apply-bar{
+  position:fixed;
+  bottom:0; left:240px; right:0;
+  background:#0D1B2A;
+  border-top:2px solid #1A6BFF;
+  padding:14px 28px;
+  display:flex; align-items:center; justify-content:space-between;
+  z-index:200;
+  transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 -4px 24px rgba(0,0,0,.2);
+}
+.apply-bar.visible{transform:translateY(0)}
+.apply-bar__left{display:flex;align-items:center;gap:12px}
+.apply-bar__dot{width:8px;height:8px;border-radius:50%;background:#F59E0B;animation:pulseDot 2s ease-in-out infinite;flex-shrink:0}
+.apply-bar__text{font-size:13px;color:rgba(255,255,255,.8)}
+.apply-bar__text strong{color:#fff}
+.apply-bar__actions{display:flex;gap:8px}
+.btn-discard{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15)}.btn-discard:hover{background:rgba(255,255,255,.14);color:#fff}
+@media(max-width:900px){.cms-layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.steps-editor{grid-template-columns:1fr 1fr}.stats-editor{grid-template-columns:1fr 1fr}.pricing-editor{grid-template-columns:1fr}.img-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="cms-layout">
+  <aside class="sidebar">
+    <div class="sidebar__logo">
+      <div class="sidebar__logo-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M6 18L12 6L18 18"/><line x1="8" y1="14" x2="16" y2="14"/></svg></div>
+      <div><div class="sidebar__logo-text">NET7 CMS</div><div class="sidebar__logo-sub">Content Manager</div></div>
+    </div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__section">Start</div>
+      <a class="sidebar__link active" data-panel="start" onclick="sp('start',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>How To Use<span class="unsaved-dot"></span></a>
+
+      <div class="sidebar__section">Global</div>
+      <a class="sidebar__link" data-panel="navbar" onclick="sp('navbar',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>Navbar<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="images" onclick="sp('images',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Images / Logo<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="contact" onclick="sp('contact',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Contact Info<span class="unsaved-dot"></span></a>
+
+      <div class="sidebar__section">Home Page</div>
+      <a class="sidebar__link" data-panel="hero" onclick="sp('hero',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>Hero<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="steps" onclick="sp('steps',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>How It Works<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="stats" onclick="sp('stats',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Value Prop<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="cta" onclick="sp('cta',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>CTA Banner<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="capture" onclick="sp('capture',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Capture &amp; Grow<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="faqhome" onclick="sp('faqhome',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Home FAQ<span class="unsaved-dot"></span></a>
+
+      <div class="sidebar__section">Features Page</div>
+      <a class="sidebar__link" data-panel="features" onclick="sp('features',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Explore Net7<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="admindash" onclick="sp('admindash',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Admin Dashboard<span class="unsaved-dot"></span></a>
+
+      <div class="sidebar__section">Pricing Page</div>
+      <a class="sidebar__link" data-panel="pricing" onclick="sp('pricing',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>Pricing Plans<span class="unsaved-dot"></span></a>
+
+      <div class="sidebar__section">Other Pages</div>
+      <a class="sidebar__link" data-panel="faqpage" onclick="sp('faqpage',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>FAQ Page<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="about" onclick="sp('about',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>About Us<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="terms" onclick="sp('terms',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Terms<span class="unsaved-dot"></span></a>
+      <a class="sidebar__link" data-panel="privacy" onclick="sp('privacy',this)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Privacy<span class="unsaved-dot"></span></a>    </nav>
+    <div class="sidebar__footer">NET7 CMS v2.0 · No server needed</div>
+  </aside>
+
+  <div class="cms-main">
+    <div class="topbar">
+      <div class="topbar__title" id="topbarTitle">How To Use</div>
+      <div class="topbar__actions">
+        <span id="fileNameBadge" class="badge badge-blue" style="display:none"></span>
+        <button class="btn btn-outline" onclick="loadFile()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Load net7.html
+        </button>
+        <button class="btn btn-preview" onclick="openPreview()" id="previewBtn" disabled>
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview
+        </button>
+        <button class="btn btn-success" onclick="saveFile()" id="saveBtn" disabled>
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save &amp; Download
+        </button>
+      </div>
+    </div>
+    <div class="cms-content">
+      <div class="status-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <div class="status-text" id="statusText">Load your <strong>net7.html</strong> file to begin editing.</div>
+        <span class="status-filename" id="statusFile"></span>
+      </div>
+
+      <!-- START -->
+      <div id="panel-start" class="panel active">
+        <div class="page-header"><h1>Welcome to Net7 CMS</h1><p>Edit your website content — no code required.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="card__title">How To Use</div></div></div></div>
+          <div class="card__body"><ol style="padding-left:18px;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#5A6272;line-height:1.65">
+              <li><strong style="color:#0D1B2A">Load your file</strong> — Click "Load HTML File" and select <code>net7.html</code>.</li>
+              <li><strong style="color:#0D1B2A">Edit content</strong> — Use the sidebar to update text, images, and links.</li>
+              <li><strong style="color:#0D1B2A">Preview</strong> — Click "Preview" in the bar that appears after making edits.</li>
+              <li><strong style="color:#0D1B2A">Save &amp; Download</strong> — Click "Save &amp; Download" to get your updated file.</li>
+              <li><strong style="color:#0D1B2A">Deploy</strong> — Upload to Vercel or your hosting provider.</li>
+            </ol>
+            <div style="margin-top:16px;padding:12px 16px;background:#EEF3FF;border-radius:8px;font-size:13px;color:#1A6BFF">
+              &#128161; Start with <strong>Global → Images / Logo</strong> and <strong>Global → Contact Info</strong> to set up shared elements.
+            </div></div>
+        </div>
+      </div>
+<!-- NAVBAR -->
+      <div id="panel-navbar" class="panel">
+        <div class="page-header"><h1>Navbar Links</h1><p>Edit the label and destination of each navigation link. Changes apply to both the desktop navbar and mobile menu.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div><div><div class="card__title">Navigation Links</div><div class="card__subtitle">5 main nav links</div></div></div></div>
+          <div class="card__body">
+            <div id="navLinksEditor"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><line x1="3" y1="20" x2="21" y2="20"/></svg></div><div><div class="card__title">Action Buttons</div><div class="card__subtitle">Top-right navbar buttons</div></div></div></div>
+          <div class="card__body">
+            <div class="field-row">
+              <div class="field"><label>Button 1 Label (Outline)</label><input type="text" id="navBtn1Label" placeholder="Request Demo"/></div>
+              <div class="field"><label>Button 1 → Links to</label><select id="navBtn1Page" class="page-select"></select></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Button 2 Label (Primary)</label><input type="text" id="navBtn2Label" placeholder="Start Today"/></div>
+              <div class="field"><label>Button 2 → Links to</label><select id="navBtn2Page" class="page-select"></select></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- HERO -->
+      <div id="panel-hero" class="panel">
+        <div class="page-header"><h1>Hero Section</h1><p>The blue gradient banner at the top of the Home page.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg></div><div><div class="card__title">Heading &amp; Subtitle</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading — Line 1</label><input type="text" id="heroLine1" placeholder="Built for Networking."/></div><div class="field"><label>Heading — Line 2</label><input type="text" id="heroLine2" placeholder="Made for Business."/></div><div class="field"><label>Subtitle</label><textarea id="heroSub" rows="3" placeholder="Capture every connection..."></textarea></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div><div class="card__title">Buttons</div></div></div></div>
+          <div class="card__body"><div class="section-label">Primary Button</div><div class="field-row"><div class="field"><label>Label</label><input type="text" id="heroCta1" placeholder="Get Started for Free"/></div><div class="field"><label>Links to</label><select id="heroCta1Page" class="page-select"></select></div></div><div class="divider"></div><div class="section-label">Ghost Button</div><div class="field-row"><div class="field"><label>Label</label><input type="text" id="heroCta2" placeholder="Watch Demo"/></div><div class="field"><label>Links to</label><select id="heroCta2Page" class="page-select"></select></div></div></div>
+        </div>
+      </div>
+      <!-- HOW IT WORKS -->
+      <div id="panel-steps" class="panel">
+        <div class="page-header"><h1>How It Works — 5 Steps</h1><p>Step 3 (Locate) is highlighted in blue.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></div><div><div class="card__title">Section Heading</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><input type="text" id="hiwHeading" placeholder="Digitalise Your Networking in 5 Steps"/></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="card__title">Steps (01–05)</div><p class="card__subtitle">Each step has a title and description</p></div></div></div>
+          <div class="card__body"><div id="stepsEditor"><p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html to edit steps.</p></div></div>
+        </div>
+      </div>
+      <!-- VALUE PROP -->
+      <div id="panel-stats" class="panel">
+        <div class="page-header"><h1>Value Proposition</h1><p>4-column section: stats 1–2 are big numbers, stats 3–4 are icon+text.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></div><div><div class="card__title">Section Heading</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><input type="text" id="statHeading" placeholder="How to Capitalise on Your Networking Data"/></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="card__title">Statistics (4 items)</div></div></div></div>
+          <div class="card__body"><div id="statsEditor"><p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html to edit stats.</p></div></div>
+        </div>
+      </div>
+      <!-- CTA BANNER -->
+      <div id="panel-cta" class="panel">
+        <div class="page-header"><h1>CTA Banner</h1><p>Appears on Home page and Pricing page.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div><div class="card__title">Banner Content</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><textarea id="ctaBannerHeading" rows="3" placeholder="Outpace Your Competition With Our AI Networking Platform Today!"></textarea></div><div class="divider"></div><div class="section-label">Button</div><div class="field-row"><div class="field"><label>Label</label><input type="text" id="ctaBannerBtn" placeholder="Get Started for Free"/></div><div class="field"><label>Links to</label><select id="ctaBannerBtnPage" class="page-select"></select></div></div></div>
+        </div>
+      </div>
+      <!-- CAPTURE & GROW -->
+      <div id="panel-capture" class="panel">
+        <div class="page-header"><h1>Capture &amp; Grow Today</h1><p>Contact section: heading, left promo (dark), right contact form.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></div><div><div class="card__title">Section Heading</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><input type="text" id="captureHeading" placeholder="Capture and Grow Today"/></div><div class="field"><label>Subtitle</label><input type="text" id="captureSub" placeholder="Let's discuss how we can help you..."/></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Left Promo (dark panel)</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><textarea id="capturePromoHeading" rows="2" placeholder="You meet people every day but forget most of them."></textarea></div><div class="field"><label>Subtext</label><textarea id="capturePromoSub" rows="2" placeholder="Without the right tools, it's easy to forget faces..."></textarea></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div><div class="card__title">Right Form Panel</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Form Title</label><input type="text" id="captureFormTitle" placeholder="Get Started"/></div><div class="field"><label>Form Subtitle</label><input type="text" id="captureFormSub" placeholder="Fill out the form below and we'll get back to you within 24 hours."/></div><div class="divider"></div><div class="section-label">Submit Button</div><div class="field-row"><div class="field"><label>Label</label><input type="text" id="captureFormBtn" placeholder="Send Message"/></div><div class="field"><label>Links to</label><select id="captureFormBtnPage" class="page-select"></select></div></div></div>
+        </div>
+      </div>
+      <!-- HOME FAQ -->
+      <div id="panel-faqhome" class="panel">
+        <div class="page-header"><h1>Home FAQ Accordion</h1><p>FAQ section at the bottom of the Home page.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></div><div><div class="card__title">Section Heading</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><input type="text" id="faqHomeHeading" placeholder="Frequently Asked Question"/></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div><div class="card__title">FAQ Items (Q&amp;A)</div><p class="card__subtitle">Each item has a question and answer</p></div></div></div>
+          <div class="card__body"><div id="faqHomeEditor"><p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html to edit FAQ items.</p></div></div>
+        </div>
+      </div>
+      <!-- EXPLORE NET7 -->
+      <div id="panel-features" class="panel">
+        <div class="page-header"><h1>Explore Net7</h1><p>Accordion + phone image at the top of the Features page.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></div><div><div class="card__title">Section Heading</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><input type="text" id="exploreHeading" placeholder="Explore Net7"/></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div><div class="card__title">Accordion Items (4 features)</div><p class="card__subtitle">Each item: title + expandable description</p></div></div></div>
+          <div class="card__body"><div id="accEditor"><p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html to edit accordion items.</p></div></div>
+        </div>
+      </div>
+      <!-- ADMIN DASHBOARD -->
+      <div id="panel-admindash" class="panel">
+        <div class="page-header"><h1>Admin Dashboard</h1><p>Dark-background section on the Features page — heading + 4 feature rows.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></div><div><div class="card__title">Section Heading</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><input type="text" id="adminDashHeading" placeholder="Admin Dashboard"/></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div><div><div class="card__title">Feature Rows (4 items)</div><p class="card__subtitle">Each: title + description</p></div></div></div>
+          <div class="card__body"><div id="adminFeatEditor"><p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html to edit admin features.</p></div></div>
+        </div>
+      </div>
+      <!-- PRICING -->
+      <div id="panel-pricing" class="panel">
+        <div class="page-header"><h1>Pricing Plans</h1><p>3 pricing cards — badge, subtitle, price, button, and feature list for each.</p></div>
+        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></div><div><div class="card__title">Page Title</div></div></div></div>
+          <div class="card__body"><div class="field"><label>Heading</label><input type="text" id="pricingHeading" placeholder="Pricing Plans"/></div></div>
+        </div>        <div class="card">
+          <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg></div><div><div class="card__title">Pricing Cards (3 plans)</div><p class="card__subtitle">Feature list: one item per line</p></div></div></div>
+          <div class="card__body"><div id="pricingEditor"><p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html to edit pricing.</p></div></div>
+        </div>
+      </div>
+<!-- FAQ PAGE -->
+      <div id="panel-faqpage" class="panel">
+        <div class="page-header"><h1>FAQ Page Topics</h1><p>Manage topics and Q&amp;A articles for the FAQ page. Each topic becomes a card in "All topics".</p></div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__header-left">
+              <div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10"/></svg></div>
+              <div><div class="card__title">Page Hero</div></div>
+            </div>
+          </div>
+          <div class="card__body">
+            <div class="field"><label>Heading</label><input type="text" id="faqPageHeading" placeholder="How can we help you?"/></div>
+            <div class="field"><label>Subtitle</label><input type="text" id="faqPageSub" placeholder="Browse topics or search for answers below."/></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <div class="card__header-left">
+              <div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+              <div><div class="card__title">Topics</div><div class="card__subtitle">Each topic = one card in "All topics" grid</div></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addFaqTopic()">+ Add Topic</button>
+          </div>
+          <div class="card__body">
+            <div id="faqTopicsEditor"></div>
+          </div>
+        </div>
+      </div>
+<!-- ABOUT US -->
+      <div id="panel-about" class="panel">
+        <div class="page-header"><h1>About Us Page</h1><p>The hero heading and 3 key company points.</p></div>
+        <div class="card"><div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="card__title">About Page Content</div></div></div></div>
+          <div class="card__body">
+            <div class="field"><label>Main Heading</label><input type="text" id="aboutHeading" placeholder="ABOUT NET7"/></div>
+            <div class="divider"></div>
+            <div class="section-label">3 Key Points</div>
+            <div class="field"><label>Point 01</label><textarea id="aboutPoint0" rows="2"></textarea></div>
+            <div class="field"><label>Point 02</label><textarea id="aboutPoint1" rows="2"></textarea></div>
+            <div class="field"><label>Point 03</label><textarea id="aboutPoint2" rows="2"></textarea></div>
+          </div>
+        </div>
+      </div>
+<!-- TERMS -->
+      <div id="panel-terms" class="panel">
+        <div class="page-header"><h1>Terms of Service</h1><p>Edit the 4 topic sections. Click a topic to expand.</p></div>
+        <div class="card"><div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="card__title">Page Intro</div></div></div></div>
+          <div class="card__body">
+            <div class="field"><label>Intro Paragraph</label><textarea id="termsIntro" rows="3"></textarea></div>
+            <div class="field"><label>Last Updated Date</label><input type="text" id="termsUpdated" placeholder="6th April, 2026"/></div>
+          </div>
+        </div>
+        <div class="card"><div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg></div><div><div class="card__title">4 Topics</div></div></div></div>
+          <div class="card__body"><div class="legal-editor" id="termsEditor"></div></div>
+        </div>
+      </div>
+<!-- PRIVACY -->
+      <div id="panel-privacy" class="panel">
+        <div class="page-header"><h1>Privacy Policy</h1><p>Edit the 4 topic sections. Click a topic to expand.</p></div>
+        <div class="card"><div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><div class="card__title">Page Intro</div></div></div></div>
+          <div class="card__body">
+            <div class="field"><label>Intro Paragraph</label><textarea id="privacyIntro" rows="3"></textarea></div>
+            <div class="field"><label>Last Updated Date</label><input type="text" id="privacyUpdated" placeholder="6th April, 2026"/></div>
+          </div>
+        </div>
+        <div class="card"><div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg></div><div><div class="card__title">4 Topics</div></div></div></div>
+          <div class="card__body"><div class="legal-editor" id="privacyEditor"></div></div>
+        </div>
+      </div>
+<!-- CONTACT INFO -->
+      <div id="panel-contact" class="panel">
+        <div class="page-header"><h1>Contact Information</h1><p>Updates contact details across all pages and footers.</p></div>
+        <div class="card"><div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div><div class="card__title">Company Details</div></div></div></div>
+          <div class="card__body">
+            <div class="field"><label>Address</label><textarea id="contactAddress" rows="3"></textarea></div>
+            <div class="field-row">
+              <div class="field"><label>Email</label><input type="email" id="contactEmail"/></div>
+              <div class="field"><label>Phone</label><input type="text" id="contactPhone"/></div>
+            </div>
+            <div class="field"><label>Office Hours</label><input type="text" id="contactHours"/></div>
+          </div>
+        </div>
+        <div class="card"><div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg></div><div><div class="card__title">Footer Text</div></div></div></div>
+          <div class="card__body">
+            <div class="field"><label>Footer Tagline</label><textarea id="footerTagline" rows="2"></textarea></div>
+            <div class="field"><label>Copyright Text</label><input type="text" id="footerCopy"/></div>
+          </div>
+        </div>
+
+        <div class="card"><div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#F59E0B" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div><div class="card__title">Google Tag Manager</div><div class="card__subtitle">For Marketing team — analytics tracking</div></div></div></div>
+          <div class="card__body">
+            <div class="field">
+              <label>GTM Container ID</label>
+              <input type="text" id="gtmContainerId" placeholder="GTM-XXXXXXX" style="font-family:monospace;letter-spacing:.05em"/>
+              <div class="field-hint">Get this from Marketing / Google Tag Manager. Format: GTM-XXXXXXX. Leave blank to keep tracking disabled.</div>
+            </div>
+            <div id="gtmStatus" style="margin-top:10px;font-size:12px;color:#8A96A6"></div>
+          </div>
+        </div>
+      </div>
+                  <!-- IMAGES -->
+      <div id="panel-images" class="panel">
+        <div class="page-header"><h1>Images &amp; Logo</h1><p>Click <strong>Upload</strong> to pick a file from your computer — it gets embedded directly. Or enter a file path if deploying with the <code>assets/images/</code> folder.</p></div>
+
+                  <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Logo</div><p class="card__subtitle">logo.png / logo.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="logoSrc" placeholder="assets/images/logo.png" style="flex:1"/>
+                  <button onclick="uploadImage('logoSrc','src:site-logo-svg')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Appears in navbar and footer. Recommended: PNG/SVG, 120×40px</p>
+              </div>
+            </div>
+          </div>
+
+        <div style="margin:16px 0 8px;font-size:11px;font-weight:800;color:#8A96A6;text-transform:uppercase;letter-spacing:.08em">Home Page</div>
+        <div class="img-grid" style="margin-bottom:8px">
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Hero Banner</div><p class="card__subtitle">hero-phones.png</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="heroImgSrc" placeholder="assets/images/hero-phones.png" style="flex:1"/>
+                  <button onclick="uploadImage('heroImgSrc','#heroImg')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">App mockup in hero section. PNG with transparent bg, 860×400px</p>
+              </div>
+            </div>
+          </div>
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Hero Background</div><p class="card__subtitle">hero-bg.jpg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="heroBgSrc" placeholder="assets/images/hero-bg.jpg" style="flex:1"/>
+                  <button onclick="uploadImage('heroBgSrc','bg:hero-v2')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Full-width hero background. JPG, 1440×600px</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="img-grid" style="margin-bottom:8px">
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">CTA Banner Photo</div><p class="card__subtitle">cta-banner-team.png</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="ctaBannerImgSrc" placeholder="assets/images/cta-banner-team.png" style="flex:1"/>
+                  <button onclick="uploadImage('ctaBannerImgSrc','#ctaBannerImg')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Used on Home + Pricing CTA banners</p>
+              </div>
+            </div>
+          </div>
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Capture &amp; Grow BG</div><p class="card__subtitle">contact-promo-bg.png</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="capturePromoBgSrc" placeholder="assets/images/contact-promo-bg.png" style="flex:1"/>
+                  <button onclick="uploadImage('capturePromoBgSrc','bg:capture-v2__bg')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Dark left panel background</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin:16px 0 8px;font-size:11px;font-weight:800;color:#8A96A6;text-transform:uppercase;letter-spacing:.08em">Features Page</div>
+        <div class="img-grid" style="margin-bottom:8px">
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Explore Net7 — Phone</div><p class="card__subtitle">features-hero.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="featuresHeroImg" placeholder="assets/images/features-hero.svg" style="flex:1"/>
+                  <button onclick="uploadImage('featuresHeroImg','#exploreImg')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Phone mockup in accordion section</p>
+              </div>
+            </div>
+          </div>
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Admin Dashboard — Laptop</div><p class="card__subtitle">admin-laptop.png</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="adminDashImg2" placeholder="assets/images/admin-laptop.png" style="flex:1"/>
+                  <button onclick="uploadImage('adminDashImg2','src:admin-dash-v2__laptop')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Laptop image in Admin Dashboard section</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="img-grid" style="margin-bottom:8px">
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Admin Dashboard — BG</div><p class="card__subtitle">admin-bg.png</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="adminDashBgSrc" placeholder="assets/images/admin-bg.png" style="flex:1"/>
+                  <button onclick="uploadImage('adminDashBgSrc','src:admin-dash-v2__bg')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Background behind laptop in Admin Dashboard</p>
+              </div>
+            </div>
+          </div>
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Real-Time Icon</div><p class="card__subtitle">admin-realtime.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="adminIcon1Src" placeholder="assets/images/admin-realtime.svg" style="flex:1"/>
+                  <button onclick="uploadImage('adminIcon1Src','#adminIcon1')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Icon for Real-Time Team Activity Dashboard</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="img-grid" style="margin-bottom:8px">
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Contact Icon</div><p class="card__subtitle">admin-contact.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="adminIcon2Src" placeholder="assets/images/admin-contact.svg" style="flex:1"/>
+                  <button onclick="uploadImage('adminIcon2Src','#adminIcon2')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Icon for Contact Ownership &amp; Reassignment</p>
+              </div>
+            </div>
+          </div>
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Access Control Icon</div><p class="card__subtitle">admin-access.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="adminIcon3Src" placeholder="assets/images/admin-access.svg" style="flex:1"/>
+                  <button onclick="uploadImage('adminIcon3Src','#adminIcon3')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Icon for Role-Based Access Control</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="img-grid" style="margin-bottom:8px">
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Notification Icon</div><p class="card__subtitle">admin-notif.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="adminIcon4Src" placeholder="assets/images/admin-notif.svg" style="flex:1"/>
+                  <button onclick="uploadImage('adminIcon4Src','#adminIcon4')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Icon for Follow-Up Task Automation</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin:16px 0 8px;font-size:11px;font-weight:800;color:#8A96A6;text-transform:uppercase;letter-spacing:.08em">Pricing Page</div>
+        <div class="img-grid" style="margin-bottom:8px">
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Free Trial Card BG</div><p class="card__subtitle">pricing-bg-1.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="pricingBg1Src" placeholder="assets/images/pricing-bg-1.svg" style="flex:1"/>
+                  <button onclick="uploadImage('pricingBg1Src','bg:pcard-v2__top--dark')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Background of Free Trial card</p>
+              </div>
+            </div>
+          </div>
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Enterprise+ Card BG</div><p class="card__subtitle">pricing-bg-3.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="pricingBg3Src" placeholder="assets/images/pricing-bg-3.svg" style="flex:1"/>
+                  <button onclick="uploadImage('pricingBg3Src','bg:pcard-v2__top--dark2')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                <p style="font-size:11px;color:#8A96A6;margin-top:4px;line-height:1.5">Background of Enterprise+ card</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin:16px 0 8px;font-size:11px;font-weight:800;color:#8A96A6;text-transform:uppercase;letter-spacing:.08em">Other Pages</div>
+        <div class="img-grid" style="margin-bottom:8px">
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">About Us Hero BG</div><p class="card__subtitle">about-hero-bg.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="aboutHeroBgSrc" placeholder="assets/images/about-hero-bg.svg" style="flex:1"/>
+                  <button onclick="uploadImage('aboutHeroBgSrc','#aboutHeroBgImg')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+                    <div class="card" style="margin:0">
+            <div class="card__header"><div class="card__header-left"><div class="card__icon"><svg width="15" height="15" fill="none" stroke="#1A6BFF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div><div class="card__title">Resources Video Thumbnail</div><p class="card__subtitle">youtube-thumbnail.svg</p></div></div></div>
+            <div class="card__body">
+              <div class="field"><label>File path or name</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="youtubeThumbnailSrc" placeholder="assets/images/youtube-thumbnail.svg" style="flex:1"/>
+                  <button onclick="uploadImage('youtubeThumbnailSrc','src:yt-poster__thumb')" style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin:20px 0 12px;padding:14px 16px;background:#E8F0FE;border-radius:10px;font-size:12px;color:#2D7EF6;line-height:1.7">
+          <strong>&#128161; How Upload works:</strong><br>
+          Click <strong>Upload</strong> → pick your image file → it gets base64-embedded into the HTML instantly.<br>
+          No server needed. Works for <code>net7.html</code> standalone mode.<br>
+          <strong>Save &amp; Download</strong> to get your updated file.
+        </div>
+
+      </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<input type="file" id="fileInput" accept=".html" style="display:none" onchange="onFileLoaded(this)"/>
+
+<!-- ── Apply Changes bar — appears when edits are made ── -->
+<div class="apply-bar" id="applyBar">
+  <div class="apply-bar__left">
+    <div class="apply-bar__dot"></div>
+    <div class="apply-bar__text">You have <strong id="applyBarCount">unsaved</strong> changes — apply them to preview or download.</div>
+  </div>
+  <div class="apply-bar__actions">
+    <button class="btn btn-discard btn-sm" onclick="discardChanges()">Discard</button>
+    <button class="btn btn-preview btn-sm" onclick="openPreview()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Preview
+    </button>
+    <button class="btn btn-success btn-sm" onclick="saveFile()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+      Save &amp; Download
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PREVIEW MODAL
+══════════════════════════════════════════════════════ -->
+<div class="preview-overlay" id="previewOverlay">
+  <div class="preview-topbar">
+    <div class="preview-topbar__left">
+      <div class="preview-topbar__title">Live Preview</div>
+      <div class="preview-topbar__badge" id="previewBadge">net7.html</div>
+    </div>
+    <!-- Device switcher -->
+    <div class="preview-device-btns">
+      <button class="preview-device-btn active" id="devDesktop" title="Desktop" onclick="setDevice('desktop')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </button>
+      <button class="preview-device-btn" id="devTablet" title="Tablet" onclick="setDevice('tablet')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </button>
+      <button class="preview-device-btn" id="devMobile" title="Mobile" onclick="setDevice('mobile')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="preview-topbar__right">
+      <button class="btn btn-success btn-sm" onclick="saveFile()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Save &amp; Download
+      </button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff" onclick="closePreview()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Close
+      </button>
+    </div>
+  </div>
+  <div class="preview-frame-wrap" id="previewFrameWrap">
+    <div style="position:relative;width:100%;height:100%">
+      <iframe id="previewIframe" class="preview-iframe" title="Website Preview"></iframe>
+      <div class="preview-loading" id="previewLoading">
+        <div class="preview-spinner"></div>
+        <span style="color:rgba(255,255,255,.7);font-size:13px">Rendering preview…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+var H='', fileName='net7.html', isDirty=false;
+var currentDevice='desktop';
+var dirtyPanels={};
+var cmsData={faqTopics:null};  /* stores structured data parsed from HTML */
+
+/* ── Per-panel dirty tracking ── */
+function getPanelForElement(el){
+  /* Walk up DOM to find the panel this input belongs to */
+  var panel=el.closest('.panel');
+  if(!panel)return null;
+  return panel.id.replace('panel-','');
+}
+
+function markPanelDirty(panelId){
+  if(!panelId||panelId==='start')return;
+  dirtyPanels[panelId]=true;
+  /* Find sidebar link with data-panel matching this panel and add has-changes */
+  var link=document.querySelector('.sidebar__link[data-panel="'+panelId+'"]');
+  if(link)link.classList.add('has-changes');
+}
+
+function clearAllDirty(){
+  dirtyPanels={};
+  document.querySelectorAll('.sidebar__link.has-changes').forEach(function(l){
+    l.classList.remove('has-changes');
+  });
+  /* Hide apply bar */
+  var bar=document.getElementById('applyBar');
+  if(bar)bar.classList.remove('visible');
+}
+
+function markDirty(panelId){
+  if(!H)return;
+  isDirty=true;
+  if(panelId)markPanelDirty(panelId);
+  setStatus('unsaved','Unsaved changes — click <strong>Save &amp; Download</strong>.',fileName);
+  /* Show apply bar and update count */
+  var bar=document.getElementById('applyBar');
+  var count=Object.keys(dirtyPanels).length;
+  var countEl=document.getElementById('applyBarCount');
+  if(countEl)countEl.textContent=count+' panel'+(count!==1?'s':'');
+  if(bar)bar.classList.add('visible');
+}
+
+function discardChanges(){
+  if(!confirm('Discard all unsaved changes and reload from the original file?'))return;
+  /* Re-populate all fields from original H */
+  cmsData={faqTopics:null};
+  statIconData=[null,null,null,null];
+  IMG={logo:null,cta:null,contact:null,promobg:null,abouthero:null,youtube:null,avatar1:null,avatar2:null,avatar3:null};
+  populateAll();
+  isDirty=false;
+  clearAllDirty();
+  setStatus('loaded','Changes discarded — reverted to loaded file.',fileName);
+  toast('↩ Changes discarded');
+}
+
+/* ── Preview ── */
+function openPreview(){
+  if(!H){toast('✗ Load net7.html first');return}
+  var updated=applyAll();
+  var overlay=document.getElementById('previewOverlay');
+  var iframe=document.getElementById('previewIframe');
+  var loading=document.getElementById('previewLoading');
+  document.getElementById('previewBadge').textContent=fileName;
+  overlay.classList.add('open');
+  loading.classList.add('show');
+  /* Write HTML into iframe using srcdoc */
+  iframe.srcdoc=updated;
+  iframe.onload=function(){loading.classList.remove('show')};
+  /* Fallback hide spinner after 3s */
+  setTimeout(function(){loading.classList.remove('show')},3000);
+}
+
+function closePreview(){
+  document.getElementById('previewOverlay').classList.remove('open');
+  /* Clear iframe to free memory */
+  document.getElementById('previewIframe').srcdoc='';
+}
+
+function setDevice(mode){
+  currentDevice=mode;
+  var wrap=document.getElementById('previewFrameWrap');
+  wrap.className='preview-frame-wrap '+mode;
+  document.getElementById('devDesktop').classList.toggle('active',mode==='desktop');
+  document.getElementById('devTablet').classList.toggle('active',mode==='tablet');
+  document.getElementById('devMobile').classList.toggle('active',mode==='mobile');
+}
+
+/* Close preview on Escape key */
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')closePreview();
+});
+
+/* Image store */
+var IMG={logo:null,cta:null,contact:null,promobg:null,abouthero:null,youtube:null,avatar1:null,avatar2:null,avatar3:null};
+var IMG_MAP={
+  logo:     /src="(assets\/images\/logo\.[^"]+|data:image[^"]+logo[^"]*)"/g,
+  cta:      /src="(assets\/images\/cta-banner-team\.[^"]+|data:image[^"]{0,300}cta[^"]*)"/g,
+  contact:  /src="(assets\/images\/contact-team-meeting\.[^"]+)"/g,
+  promobg:  /url\('(assets\/images\/contact-promo-bg\.[^']+)'\)/g,
+  abouthero:/src="(assets\/images\/about-hero-bg\.[^"]+)"/g,
+  youtube:  /src="(assets\/images\/youtube-thumbnail\.[^"]+)"/g,
+  avatar1:  null, avatar2:null, avatar3:null,
+};
+
+/* Panel titles */
+var PT={start:'How To Use',hero:'Hero Section',navbar:'Navbar Links',cta:'CTA Banner',steps:'How It Works (5 Steps)',stats:'Value Proposition',pricing:'Pricing Plans',faqhome:'Home FAQ',features:'Features Page',about:'About Us',terms:'Terms of Service',privacy:'Privacy Policy',contact:'Contact Information',images:'Images & Logo',faqpage:'FAQ Page Topics'};
+
+function sp(id,el){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.sidebar__link').forEach(function(l){l.classList.remove('active')});
+  document.getElementById('panel-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  document.getElementById('topbarTitle').textContent=PT[id]||id;
+}
+
+/* ── Load file ── */
+function loadFile(){document.getElementById('fileInput').click()}
+function onFileLoaded(inp){
+  var file=inp.files[0]; if(!file)return;
+  fileName=file.name;
+  var r=new FileReader();
+  r.onload=function(e){
+    H=e.target.result;
+    populateAll();
+    setStatus('loaded','File loaded — <strong>'+file.name+'</strong> ready to edit.',file.name);
+    document.getElementById('saveBtn').disabled=false;
+    document.getElementById('previewBtn').disabled=false;
+    document.getElementById('fileNameBadge').style.display='inline-block';
+    document.getElementById('fileNameBadge').textContent=file.name;
+    toast('✓ '+file.name+' loaded!');
+    isDirty=false;
+  };
+  r.readAsText(file); inp.value='';
+}
+
+/* ── Helpers ── */
+function g(id){var e=document.getElementById(id);return e?e.value.trim():''}
+function s(id,v){var e=document.getElementById(id);if(e)e.value=unesc(v||'')}
+function esc(x){return(x||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function unesc(x){return(x||'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ')}
+function ex(cls,tag){var m=H.match(new RegExp('class="'+cls+'"[^>]*>([\\s\\S]*?)</'+tag+'>'));return m?m[1].trim():''}
+function setStatus(st,msg,file){document.getElementById('statusDot').className='status-dot '+st;document.getElementById('statusText').innerHTML=msg;document.getElementById('statusFile').textContent=file||''}
+function markDirty(){if(!H)return;isDirty=true;setStatus('unsaved','Unsaved changes — click <strong>Save &amp; Download</strong>.',fileName)}
+
+/* ── Toast ── */
+var TT;
+function toast(msg){var t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.classList.add('show');clearTimeout(TT);TT=setTimeout(function(){t.classList.remove('show')},3200)}
+
+/* ── Populate all panels ── */
+
+/* ── helpers ── */
+function g(id){var el=document.getElementById(id);return el?el.value:'';}
+function s(id,v){var el=document.getElementById(id);if(el)el.value=unesc(v);}
+function esc(x){if(!x)return'';return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function unesc(x){if(!x)return'';return String(x).replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&nbsp;/g,' ');}
+function ex(cls,tag){var re=new RegExp('class="'+cls+'"[\\s\\S]*?<\\/'+tag+'>');var m=H.match(re);if(!m)return'';return m[0].replace(new RegExp('^[\\s\\S]*?class="'+cls+'"[^>]*>'),'').replace(new RegExp('<\\/'+tag+'>$'),'').trim();}
+
+
+/* ── Image Upload Helper ── */
+function uploadImage(inputId, targetAttr) {
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  fileInput.addEventListener('change', function() {
+    var file = fileInput.files[0];
+    if (!file) { document.body.removeChild(fileInput); return; }
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var dataUri = e.target.result;
+      var mime = file.type;
+
+      /* Update the text input with file name for reference */
+      var inp = document.getElementById(inputId);
+      if (inp) {
+        inp.value = file.name;
+        /* Show thumbnail */
+        var thumb = document.getElementById(inputId + '_thumb');
+        if (!thumb) {
+          thumb = document.createElement('img');
+          thumb.id = inputId + '_thumb';
+          thumb.style.cssText = 'width:80px;height:50px;object-fit:cover;border-radius:6px;margin-top:8px;border:1.5px solid #E8EDF7;display:block;';
+          inp.parentNode.appendChild(thumb);
+        }
+        thumb.src = dataUri;
+      }
+
+      /* Embed into H using the targetAttr selector */
+      if (!H) { toast('✗ Load net7.html first'); document.body.removeChild(fileInput); return; }
+
+      /* Replace by img id attribute */
+      if (targetAttr.startsWith('#')) {
+        var id = targetAttr.slice(1);
+        /* Replace src for id-based images */
+        H = H.replace(
+          new RegExp('(<img[^>]*id="' + id + '"[^>]*src=")[^"]*(")', 'g'),
+          '$1' + dataUri + '$2'
+        );
+        /* Also handle background-image url() for bg-type images */
+        H = H.replace(
+          new RegExp('(id="' + id + '"[^>]*style="[^"]*background[^:]*:[^u]*url\\()[^)]+', 'g'),
+          '$1' + dataUri
+        );
+      } else if (targetAttr.startsWith('bg:')) {
+        /* Background image replacement: bg:css-class */
+        var cls = targetAttr.slice(3);
+        H = H.replace(
+          new RegExp('(\\.' + cls + '[^}]*background[^:]*:[^u]*url\\()["\']?)[^"\'\\)]+(["\']?\\))', 'g'),
+          '$1' + dataUri + '$2'
+        );
+      } else if (targetAttr.startsWith('src:')) {
+        /* Replace by class */
+        var srcCls = targetAttr.slice(4);
+        H = H.replace(
+          new RegExp('(class="' + srcCls + '"[^>]*src=")[^"]*(")', 'g'),
+          '$1' + dataUri + '$2'
+        );
+        H = H.replace(
+          new RegExp('(src=")[^"]*("[^>]*class="' + srcCls + '")', 'g'),
+          '$1' + dataUri + '$2'
+        );
+      }
+
+      markDirty('images');
+      toast('✓ ' + file.name + ' uploaded & embedded');
+      document.body.removeChild(fileInput);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  fileInput.click();
+}
+
+/* Helper to render an image field with upload button */
+function imgField(labelText, inputId, targetAttr, placeholder) {
+  return '<div class="field">'
+    + '<label>' + labelText + '</label>'
+    + '<div style="display:flex;gap:8px;align-items:center">'
+    + '<input type="text" id="' + inputId + '" placeholder="' + placeholder + '" style="flex:1"/>'
+    + '<button onclick="uploadImage(\'' + inputId + '\',\'' + targetAttr + '\')" '
+    + 'style="padding:8px 14px;background:#2D7EF6;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128247; Upload</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function populateAll(){
+  popNavbar();popHero();popSteps();popStats();popCta();popCapture();popFaqHome();
+  popFeatures();popAdminDash();popPricing();
+  popFaqPage();popAbout();popTerms();popPrivacy();popContact();popImages();
+  initPageSelects();
+}
+
+function popNavbar(){
+  var links=H.match(/<a class="nav-link[^"]*" data-page="([^"]+)"[^>]*>([^<]+)<\/a>/g)||[];
+  var half=Math.ceil(links.length/2);var html='';
+  for(var i=0;i<half;i++){
+    var pm=links[i].match(/data-page="([^"]+)"/);var lm=links[i].match(/>([^<]+)<\/a>/);
+    html+='<div class="field-row"><div class="field"><label>Link '+(i+1)+' Label</label><input type="text" id="navLinkLabel'+i+'" value="'+esc(lm?lm[1].trim():'')+'" oninput="markDirty(\'navbar\')"/></div>'
+      +'<div class="field"><label>Links to</label><select id="navLinkPage'+i+'" class="page-select" data-selected="'+(pm?pm[1]:'')+'" onchange="markDirty(\'navbar\')"></select></div></div>';
+  }
+  var ed=document.getElementById('navLinksEditor');if(ed)ed.innerHTML=html;
+  var dm=H.match(/class="btn btn-outline"[^>]*>([^<]+)<\/a>/);if(dm)s('navDemoLabel',dm[1].trim());
+  var cm=H.match(/class="btn btn-primary"[^>]*>([^<]+)<\/a>/);if(cm)s('navCtaLabel',cm[1].trim());
+  initPageSelects();
+}
+
+function popHero(){
+  var hd=ex('hero-v2__heading','h1');var parts=hd.split(/<br\s*\/?>/i);
+  s('heroLine1',parts[0]?parts[0].trim():'');s('heroLine2',parts[1]?parts[1].trim():'');
+  s('heroSub',ex('hero-v2__sub','p'));
+  var m1=H.match(/class="hero-v2__cta-primary"[^>]*onclick="[^"]*showPage\('([^']+)'\)"[^>]*>([^<]+)/);
+  if(m1){s('heroCta1',m1[2].trim());var sel=document.getElementById('heroCta1Page');if(sel)sel.setAttribute('data-selected',m1[1]);}
+  var m2p=H.match(/class="hero-v2__cta-ghost"[^>]*onclick="[^"]*showPage\('([^']+)'\)"/);
+  if(m2p){var sel2=document.getElementById('heroCta2Page');if(sel2)sel2.setAttribute('data-selected',m2p[1]);}
+  var m2t=H.match(/class="hero-v2__cta-ghost"[\s\S]*?<\/svg>\s*\n\s*(\S[^\n<]+)/);
+  if(m2t)s('heroCta2',m2t[1].trim());
+}
+
+function popSteps(){
+  s('hiwHeading',ex('hiw-v2__heading','h2'));
+  var titles=H.match(/class="step-v2__title">([^<]+)<\/h3>/g)||[];
+  var descs=H.match(/class="step-v2__desc">([^<]+)<\/p>/g)||[];
+  var html='';
+  for(var i=0;i<5;i++){
+    var t=titles[i]?titles[i].replace(/class="step-v2__title">/,'').replace(/<\/h3>/,'').trim():'';
+    var d=descs[i]?descs[i].replace(/class="step-v2__desc">/,'').replace(/<\/p>/,'').trim():'';
+    html+='<div style="margin-bottom:10px;padding:14px;background:#F8F9FB;border-radius:10px;border:1.5px solid #EAEEF5">'
+      +'<div style="font-size:11px;font-weight:800;color:#1A6BFF;margin-bottom:8px">Step 0'+(i+1)+(i===2?' &#x2605; Highlighted':'')+' </div>'
+      +'<div class="field"><label>Title</label><input type="text" id="stepTitle'+i+'" value="'+esc(t)+'" oninput="markDirty(\'steps\')"/></div>'
+      +'<div class="field"><label>Description</label><textarea id="stepDesc'+i+'" rows="2" oninput="markDirty(\'steps\')">'+esc(d)+'</textarea></div>'
+      +'</div>';
+  }
+  var ed=document.getElementById('stepsEditor');if(ed)ed.innerHTML=html;
+}
+
+function popStats(){
+  var hm=H.match(/class="valprop-v2__heading">([^<]+)<\/h2>/);if(hm)s('statHeading',hm[1].trim());
+  var statNums=H.match(/class="vstat__num">[\s\S]*?<\/div>/g)||[];
+  var statTitles=H.match(/class="vstat__title">([^<]+)<\/p>/g)||[];
+  var statDescs=H.match(/class="vstat__desc">([^<]+)<\/p>/g)||[];
+  var html='';
+  for(var i=0;i<4;i++){
+    var numBlk=statNums[i]||'';
+    var rawNum=numBlk.replace(/<[^>]+>/g,'').trim();
+    var unit=rawNum.replace(/[0-9.]/g,'');var num=rawNum.replace(/[^0-9.]/g,'');
+    var title=statTitles[i]?statTitles[i].replace(/class="vstat__title">/,'').replace(/<\/p>/,'').trim():'';
+    var desc=statDescs[i]?statDescs[i].replace(/class="vstat__desc">/,'').replace(/<\/p>/,'').trim():'';
+    html+='<div style="margin-bottom:10px;padding:14px;background:#F8F9FB;border-radius:10px;border:1.5px solid #EAEEF5">'
+      +'<div style="font-size:11px;font-weight:800;color:#1A6BFF;margin-bottom:8px">Stat '+(i+1)+(i<2?' (Number)':' (Icon)')+' </div>';
+    if(i<2)html+='<div class="field-row"><div class="field"><label>Number</label><input type="text" id="statNum'+i+'" value="'+esc(num)+'" placeholder="80" oninput="markDirty(\'stats\')"/></div><div class="field"><label>Unit</label><input type="text" id="statUnit'+i+'" value="'+esc(unit||'%')+'" placeholder="%" oninput="markDirty(\'stats\')"/></div></div>';
+    html+='<div class="field"><label>Title</label><input type="text" id="statTitle'+i+'" value="'+esc(title)+'" oninput="markDirty(\'stats\')"/></div>'
+      +'<div class="field"><label>Description</label><textarea id="statDesc'+i+'" rows="2" oninput="markDirty(\'stats\')">'+esc(desc)+' </textarea></div></div>';
+  }
+  var ed=document.getElementById('statsEditor');if(ed)ed.innerHTML=html;
+}
+
+function popCta(){
+  var hm=H.match(/class="cta-banner-v2__heading">([^<]+)<\/h2>/);if(hm)s('ctaBannerHeading',hm[1].trim());
+  var bm=H.match(/class="btn-pill-dark"[^>]*onclick="[^"]*showPage\('([^']+)'\)"[^>]*>([^<]+)/);
+  if(bm){s('ctaBannerBtn',bm[2].trim());var sel=document.getElementById('ctaBannerBtnPage');if(sel)sel.setAttribute('data-selected',bm[1]);}
+}
+
+function popCapture(){
+  var hm=H.match(/class="capture-v2__heading">([^<]+)<\/h2>/);if(hm)s('captureHeading',hm[1].trim());
+  var sm=H.match(/class="capture-v2__sub">([^<]+)<\/p>/);if(sm)s('captureSub',sm[1].trim());
+  var pm=H.match(/class="capture-v2__promo-heading">([^<]+)<\/h3>/);if(pm)s('capturePromoHeading',pm[1].trim());
+  var psm=H.match(/class="capture-v2__promo-sub">([^<]+)<\/p>/);if(psm)s('capturePromoSub',psm[1].trim());
+  var fm=H.match(/class="capture-v2__form-title">([^<]+)<\/h3>/);if(fm)s('captureFormTitle',fm[1].trim());
+  var fsm=H.match(/class="capture-v2__form-sub">([^<]+)<\/p>/);if(fsm)s('captureFormSub',fsm[1].trim());
+}
+
+function popFaqHome(){
+  var hm=H.match(/class="faq-v2__heading">([^<]+)<\/h2>/);if(hm)s('faqHomeHeading',hm[1].trim());
+  var secM=H.match(/class="faq-v2">([\s\S]*?)<\/section>/);
+  var secHtml=secM?secM[1]:'';
+  var qs=secHtml.match(/class="faq-item__text">([^<]+)<\/span>/g)||[];
+  var as=secHtml.match(/class="faq-item__a"><p>([\s\S]*?)<\/p><\/div>/g)||[];
+  var html='';
+  for(var i=0;i<qs.length;i++){
+    var q=qs[i].replace(/class="faq-item__text">/,'').replace(/<\/span>/,'').trim();
+    var a=as[i]?as[i].replace(/class="faq-item__a"><p>/,'').replace(/<\/p><\/div>/,'').trim():'';
+    html+='<div style="margin-bottom:10px;padding:14px;background:#F8F9FB;border-radius:10px;border:1.5px solid #EAEEF5">'
+      +'<div class="field"><label>Q'+(i+1)+'</label><input type="text" id="faqHomeQ'+i+'" value="'+esc(q)+'" oninput="markDirty(\'faqhome\')"/></div>'
+      +'<div class="field"><label>Answer</label><textarea id="faqHomeA'+i+'" rows="3" oninput="markDirty(\'faqhome\')">'+esc(a)+'</textarea></div></div>';
+  }
+  var ed=document.getElementById('faqHomeEditor');if(ed)ed.innerHTML=html||'<p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html first.</p>';
+}
+
+function popFeatures(){
+  var hm=H.match(/class="explore-v2__heading">([^<]+)<\/h1>/);if(hm)s('exploreHeading',hm[1].trim());
+  var accTs=H.match(/class="acc-item__title">([^<]+)<\/span>/g)||[];
+  var accDs=H.match(/class="acc-item__desc">([^<]+)<\/p>/g)||[];
+  var html='';
+  for(var i=0;i<Math.max(accTs.length,4);i++){
+    var t=accTs[i]?accTs[i].replace(/class="acc-item__title">/,'').replace(/<\/span>/,'').trim():'';
+    var d=accDs[i]?accDs[i].replace(/class="acc-item__desc">/,'').replace(/<\/p>/,'').trim():'';
+    html+='<div style="margin-bottom:10px;padding:14px;background:#F8F9FB;border-radius:10px;border:1.5px solid #EAEEF5">'
+      +'<div style="font-size:11px;font-weight:800;color:#1A6BFF;margin-bottom:8px">Feature '+(i+1)+'</div>'
+      +'<div class="field"><label>Title</label><input type="text" id="accTitle'+i+'" value="'+esc(t)+'" oninput="markDirty(\'features\')"/></div>'
+      +'<div class="field"><label>Description</label><textarea id="accDesc'+i+'" rows="2" oninput="markDirty(\'features\')">'+esc(d)+' </textarea></div></div>';
+  }
+  var ed=document.getElementById('accEditor');if(ed)ed.innerHTML=html||'<p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html first.</p>';
+}
+
+function popAdminDash(){
+  var hm=H.match(/class="admin-dash-v2__heading">([^<]+)<\/h2>/);if(hm)s('adminDashHeading',hm[1].trim());
+  var adTs=H.match(/class="admin-feat__title">([^<]+)<\/p>/g)||[];
+  var adDs=H.match(/class="admin-feat__desc">([^<]+)<\/p>/g)||[];
+  var html='';
+  for(var i=0;i<Math.max(adTs.length,4);i++){
+    var t=adTs[i]?adTs[i].replace(/class="admin-feat__title">/,'').replace(/<\/p>/,'').trim():'';
+    var d=adDs[i]?adDs[i].replace(/class="admin-feat__desc">/,'').replace(/<\/p>/,'').trim():'';
+    html+='<div style="margin-bottom:10px;padding:14px;background:#F8F9FB;border-radius:10px;border:1.5px solid #EAEEF5">'
+      +'<div style="font-size:11px;font-weight:800;color:#1A6BFF;margin-bottom:8px">Feature '+(i+1)+'</div>'
+      +'<div class="field"><label>Title</label><input type="text" id="adminFeatTitle'+i+'" value="'+esc(t)+'" oninput="markDirty(\'admindash\')"/></div>'
+      +'<div class="field"><label>Description</label><textarea id="adminFeatDesc'+i+'" rows="2" oninput="markDirty(\'admindash\')">'+esc(d)+' </textarea></div></div>';
+  }
+  var ed=document.getElementById('adminFeatEditor');if(ed)ed.innerHTML=html||'<p style="color:#8A96A6;font-size:13px;padding:8px 0">Load net7.html first.</p>';
+}
+
+function popPricing(){
+  var ph=H.match(/class="pricing-v2__heading">([^<]+)<\/h1>/);if(ph)s('pricingHeading',ph[1].trim());
+  var badges=H.match(/class="pcard-v2__badge(?:\s+pcard-v2__badge--\w+)?">([^<]+)<\/span>/g)||[];
+  var tags=H.match(/class="pcard-v2__tag">([\s\S]*?)<\/p>/g)||[];
+  var prices=H.match(/class="pcard-v2__price">([^<]+)<\/p>/g)||[];
+  var contacts=H.match(/class="pcard-v2__price-contact">([\s\S]*?)<\/p>/g)||[];
+  var periods=H.match(/class="pcard-v2__price-period">([^<]+)<\/p>/g)||[];
+  var ctas=H.match(/class="pcard-v2__cta[^"]*"[^>]*>([^<]+)<\/button>/g)||[];
+  /* Get feature text for each of the 3 cards */
+  var allFeatTexts=H.match(/class="pcard-v2__feat">[\s\S]*?<\/div>/g)||[];
+  var planNames=['Free Trial','Enterprise','Enterprise+ (Custom)'];
+  var planFeats=[[],[],[]];var planIdx=0;
+  allFeatTexts.forEach(function(f){
+    var txt=f.replace(/<[^>]+>/g,'').trim();
+    if(planFeats[planIdx])planFeats[planIdx].push(txt);
+    /* Simple heuristic: badges tell us when we're in next plan */
+  });
+  /* Better: split H by pcard-v2__features */
+  var featSections=H.split('class="pcard-v2__features"').slice(1,4);
+  planFeats=featSections.map(function(sec){
+    var items=sec.match(/class="pcard-v2__feat">[\s\S]*?<\/div>/g)||[];
+    return items.map(function(f){return f.replace(/<[^>]+>/g,'').trim();});
+  });
+  var html='';
+  for(var i=0;i<3;i++){
+    var badge=badges[i]?badges[i].replace(/class="pcard-v2__badge[^"]*">/,'').replace(/<\/span>/,'').trim():'';
+    var tag=tags[i]?tags[i].replace(/class="pcard-v2__tag">/,'').replace(/<\/p>/,'').replace(/<br>/g,' ').trim():'';
+    var price=prices[i]?prices[i].replace(/class="pcard-v2__price">/,'').replace(/<\/p>/,'').trim():'';
+    var contact=contacts[i]?contacts[i].replace(/class="pcard-v2__price-contact">/,'').replace(/<\/p>/,'').replace(/<br>/g,' ').trim():'';
+    var period=periods[i]?periods[i].replace(/class="pcard-v2__price-period">/,'').replace(/<\/p>/,'').trim():'';
+    var cta=ctas[i]?ctas[i].replace(/class="pcard-v2__cta[^"]*"[^>]*>/,'').replace(/<\/button>/,'').trim():'';
+    html+='<div style="margin-bottom:20px;padding:16px;background:#F8F9FB;border-radius:12px;border:1.5px solid '+(i===1?'#1A6BFF':'#EAEEF5')+'">'
+      +'<div style="font-size:11px;font-weight:800;color:#1A6BFF;margin-bottom:12px">Plan '+(i+1)+': '+planNames[i]+'</div>'
+      +'<div class="field"><label>Badge Label</label><input type="text" id="planBadge'+i+'" value="'+esc(badge)+'" oninput="markDirty(\'pricing\')"/></div>'
+      +'<div class="field"><label>Subtitle Tag</label><input type="text" id="planTag'+i+'" value="'+esc(tag)+'" oninput="markDirty(\'pricing\')"/></div>'
+      +(price?'<div class="field"><label>Price</label><input type="text" id="planPrice'+i+'" value="'+esc(price)+'" oninput="markDirty(\'pricing\')"/></div>':'')
+      +(contact?'<div class="field"><label>Price Display</label><input type="text" id="planPriceContact'+i+'" value="'+esc(contact)+'" oninput="markDirty(\'pricing\')"/></div>':'')
+      +(period?'<div class="field"><label>Price Period</label><input type="text" id="planPeriod'+i+'" value="'+esc(period)+'" oninput="markDirty(\'pricing\')"/></div>':'')
+      +'<div class="field"><label>Button Label</label><input type="text" id="planCta'+i+'" value="'+esc(cta)+'" oninput="markDirty(\'pricing\')"/></div>'
+      +'<div class="divider"></div>'
+      +'<div style="font-size:12px;font-weight:600;color:#0D1B2A;margin-bottom:8px">Features (one per line)</div>'
+      +'<textarea id="planFeats'+i+'" rows="'+(planFeats[i]?planFeats[i].length+2:4)+'" style="width:100%;font-size:12px;font-family:monospace" oninput="markDirty(\'pricing\')">'+esc(planFeats[i]?planFeats[i].join('\n'):'')+'</textarea>'
+      +'</div>';
+  }
+  var ed=document.getElementById('pricingEditor');if(ed)ed.innerHTML=html;
+}
+
+function popImages(){
+  var logoM=H.match(/class="site-logo-svg"[^>]*src="([^"]+)"/);if(logoM)s('logoSrc',logoM[1]);
+  var himM=H.match(/id="heroImg"[^>]*src="([^"]+)"/);if(himM)s('heroImgSrc',himM[1]);
+  var bgM=H.match(/url\("(assets\/images\/hero-bg\.[^"]+)"\)/);if(bgM)s('heroBgSrc',bgM[1]);
+  var ctaM=H.match(/id="ctaBannerImg"[^>]*src="([^"]+)"/);if(ctaM)s('ctaBannerImgSrc',ctaM[1]);
+  var fhM=H.match(/id="exploreImg"[^>]*src="([^"]+)"/);if(fhM)s('featuresHeroImg',fhM[1]);
+  /* Admin dashboard images */
+  var laptopM=H.match(/class="admin-dash-v2__laptop"[^>]*src="([^"]+)"/);
+  if(!laptopM)laptopM=H.match(/src="([^"]+)"[^>]*class="admin-dash-v2__laptop"/);
+  if(laptopM)s('adminDashImg2',laptopM[1].substring(0,60));
+  var adminBgM=H.match(/class="admin-dash-v2__bg"[^>]*src="([^"]+)"/);
+  if(!adminBgM)adminBgM=H.match(/src="([^"]+)"[^>]*class="admin-dash-v2__bg"/);
+  if(adminBgM)s('adminDashBgSrc',adminBgM[1].substring(0,60));
+  /* Admin icons */
+  var ri=H.match(/id="adminIcon1"[^>]*src="([^"]+)"/);if(ri)s('adminIcon1Src',ri[1].substring(0,60));
+  var ci=H.match(/id="adminIcon2"[^>]*src="([^"]+)"/);if(ci)s('adminIcon2Src',ci[1].substring(0,60));
+  var ai=H.match(/id="adminIcon3"[^>]*src="([^"]+)"/);if(ai)s('adminIcon3Src',ai[1].substring(0,60));
+  var ni=H.match(/id="adminIcon4"[^>]*src="([^"]+)"/);if(ni)s('adminIcon4Src',ni[1].substring(0,60));
+  var bgM=H.match(/\.hero-v2\s*\{[^}]*url\("([^"]+)"\)/);if(bgM)s('heroBgSrc',bgM[1]);
+  var ctaM=H.match(/id="ctaBannerImg"[^>]*src="([^"]+)"/);if(ctaM)s('ctaBannerImgSrc',ctaM[1]);
+  /* Capture & Grow promo bg - from inline style */
+  var captBgM=H.match(/capture-v2__promo[^}]*url\('([^']+)'\)/);if(captBgM)s('capturePromoBgSrc',captBgM[1]);
+  var fhM=H.match(/id="exploreImg"[^>]*src="([^"]+)"/);if(fhM)s('featuresHeroImg',fhM[1]);
+  var adM=H.match(/id="adminDashImg"[^>]*src="([^"]+)"/);if(adM)s('adminDashImg2',adM[1]);
+  /* Pricing card backgrounds */
+  var pb1=H.match(/pcard-v2__top--dark[^}]*url\('([^']+)'\)/);if(pb1)s('pricingBg1Src',pb1[1]);
+  var pb3=H.match(/pcard-v2__top--dark2[^}]*url\('([^']+)'\)/);if(pb3)s('pricingBg3Src',pb3[1]);
+  var abM=H.match(/about-hero__bg-img[^>]*src="([^"]+)"/);if(abM)s('aboutHeroBgSrc',abM[1]);
+  var ctmM=H.match(/contact-section__image[^>]*>[\s\S]{0,100}src="([^"]+)"/);if(ctmM)s('contactTeamImg',ctmM[1]);
+  var ytM=H.match(/yt-poster__thumb[^>]*src="([^"]+)"/);if(ytM)s('youtubeThumbnailSrc',ytM[1]);
+  var toM=H.match(/legal-img-wrap[\s\S]{0,200}src="([^"]+)"/);if(toM)s('termsOfficeImg',toM[1]);
+}
+
+function applyAll(){
+  if(!H)return H; var h=H;
+
+  /* NAVBAR */
+  var nlAll=h.match(/<a class="nav-link[^"]*" data-page="[^"]*"[^>]*>[^<]+<\/a>/g)||[];
+  var half=Math.ceil(nlAll.length/2);
+  for(var ni=0;ni<half;ni++){
+    var lbl=g('navLinkLabel'+ni);var pg=g('navLinkPage'+ni);if(!lbl)continue;
+    if(nlAll[ni])h=h.replace(nlAll[ni],nlAll[ni].replace(/data-page="[^"]*"/,function(){return 'data-page="'+pg+'"';}).replace(/>[^<]+<\/a>/,'>'+esc(lbl)+'</a>'));
+    if(nlAll[half+ni])h=h.replace(nlAll[half+ni],nlAll[half+ni].replace(/data-page="[^"]*"/,function(){return 'data-page="'+pg+'"';}).replace(/>[^<]+<\/a>/,'>'+esc(lbl)+'</a>'));
+  }
+  var demoLbl=g('navDemoLabel');if(demoLbl)h=h.replace(/(<a class="btn btn-outline"[^>]*>)[^<]+(<\/a>)/,function(m,p1,p2){return p1+esc(demoLbl)+p2;});
+  var ctaLbl=g('navCtaLabel');if(ctaLbl)h=h.replace(/(<a class="btn btn-primary"[^>]*>)[^<]+(<\/a>)/,function(m,p1,p2){return p1+esc(ctaLbl)+p2;});
+
+  /* HERO */
+  var hl1=g('heroLine1');var hl2=g('heroLine2');
+  if(hl1||hl2)h=h.replace(/(<h1 class="hero-v2__heading">)([\s\S]*?)(<\/h1>)/,function(m,p1,_,p3){return p1+esc(hl1)+(hl2?'<br>'+esc(hl2):'')+p3;});
+  var hsub=g('heroSub');if(hsub)h=h.replace(/(<p class="hero-v2__sub">)[^<]*(<\/p>)/,'$1'+esc(hsub)+'$2');
+  var hc1=g('heroCta1');if(hc1)h=h.replace(/(<button class="hero-v2__cta-primary"[^>]*>)[^<]+(<\/button>)/,function(m,p1,p2){return p1+esc(hc1)+p2;});
+  var hc1p=g('heroCta1Page');if(hc1p)h=h.replace(/(onclick="showPage\(')([\w-]+)('\)"[^>]*class="hero-v2__cta-primary")/,function(m,p1,_,p3){return p1+hc1p+p3;});
+  var hc2=g('heroCta2');if(hc2)h=h.replace(/(class="hero-v2__cta-ghost"[\s\S]*?<\/svg>\s*\n\s*)\S[^\n<]+/,function(m,p1){return p1+esc(hc2);});
+
+  /* HOW IT WORKS */
+  var hh=g('hiwHeading');if(hh)h=h.replace(/(<h2 class="hiw-v2__heading">)[^<]+(<\/h2>)/,'$1'+esc(hh)+'$2');
+  var stepTs=h.match(/class="step-v2__title">([^<]+)<\/h3>/g)||[];
+  var stepDs=h.match(/class="step-v2__desc">([^<]+)<\/p>/g)||[];
+  for(var si=0;si<5;si++){
+    var st=g('stepTitle'+si);if(st&&stepTs[si])h=h.replace(stepTs[si],'class="step-v2__title">'+esc(st)+'</h3>');
+    var sd=g('stepDesc'+si);if(sd&&stepDs[si])h=h.replace(stepDs[si],'class="step-v2__desc">'+esc(sd)+'</p>');
+  }
+
+  /* VALUE PROP */
+  var sh=g('statHeading');if(sh)h=h.replace(/(<h2 class="valprop-v2__heading">)[^<]+(<\/h2>)/,'$1'+esc(sh)+'$2');
+  var vTs=h.match(/class="vstat__title">([^<]+)<\/p>/g)||[];
+  var vDs=h.match(/class="vstat__desc">([^<]+)<\/p>/g)||[];
+  var vNs=h.match(/class="vstat__num">[\s\S]*?<\/div>/g)||[];
+  for(var vi=0;vi<4;vi++){
+    var vt=g('statTitle'+vi);if(vt&&vTs[vi])h=h.replace(vTs[vi],'class="vstat__title">'+esc(vt)+'</p>');
+    var vd=g('statDesc'+vi);if(vd&&vDs[vi])h=h.replace(vDs[vi],'class="vstat__desc">'+esc(vd)+'</p>');
+    if(vi<2){var vn=g('statNum'+vi);var vu=g('statUnit'+vi);if(vn&&vNs[vi])h=h.replace(vNs[vi],'class="vstat__num">'+esc(vn)+'<span class="vstat__unit">'+esc(vu||'%')+'</span></div>');}
+  }
+
+  /* CTA BANNER */
+  var ch=g('ctaBannerHeading');if(ch)h=h.replace(/(<h2 class="cta-banner-v2__heading">)[^<]+(<\/h2>)/g,'$1'+esc(ch)+'$2');
+  var cb=g('ctaBannerBtn');if(cb)h=h.replace(/(<button class="btn-pill-dark"[^>]*>)[^<]+(<\/button>)/g,function(m,p1,p2){return p1+esc(cb)+p2;});
+  var cbp=g('ctaBannerBtnPage');if(cbp)h=h.replace(/(class="btn-pill-dark"[^>]*onclick="[^"]*showPage\(')\w+(')/g,function(m,p1,p2){return p1+cbp+p2;});
+
+  /* CAPTURE & GROW */
+  var captH=g('captureHeading');if(captH)h=h.replace(/(<h2 class="capture-v2__heading">)[^<]+(<\/h2>)/,'$1'+esc(captH)+'$2');
+  var captS=g('captureSub');if(captS)h=h.replace(/(<p class="capture-v2__sub">)[^<]+(<\/p>)/,'$1'+esc(captS)+'$2');
+  var captPH=g('capturePromoHeading');if(captPH)h=h.replace(/(<h3 class="capture-v2__promo-heading">)[^<]+(<\/h3>)/,'$1'+esc(captPH)+'$2');
+  var captPS=g('capturePromoSub');if(captPS)h=h.replace(/(<p class="capture-v2__promo-sub">)[^<]+(<\/p>)/,'$1'+esc(captPS)+'$2');
+  var captFT=g('captureFormTitle');if(captFT)h=h.replace(/(<h3 class="capture-v2__form-title">)[^<]+(<\/h3>)/,'$1'+esc(captFT)+'$2');
+  var captFS=g('captureFormSub');if(captFS)h=h.replace(/(<p class="capture-v2__form-sub">)[^<]+(<\/p>)/,'$1'+esc(captFS)+'$2');
+
+  /* HOME FAQ */
+  var faqH=g('faqHomeHeading');if(faqH)h=h.replace(/(<h2 class="faq-v2__heading">)[^<]+(<\/h2>)/,'$1'+esc(faqH)+'$2');
+  var faqV2Start=h.indexOf('class="faq-v2"');var faqV2End=h.indexOf('</section>',faqV2Start);
+  if(faqV2Start>=0){
+    var faqQs=[];var faqAs=[];
+    var faqBlock=h.substring(faqV2Start,faqV2End);
+    faqQs=faqBlock.match(/class="faq-item__text">([^<]+)<\/span>/g)||[];
+    faqAs=faqBlock.match(/class="faq-item__a"><p>([\s\S]*?)<\/p><\/div>/g)||[];
+    for(var fi=0;fi<faqQs.length;fi++){
+      var fq=g('faqHomeQ'+fi);if(fq&&faqQs[fi])h=h.replace(faqQs[fi],'class="faq-item__text">'+esc(fq)+'</span>');
+      var fa=g('faqHomeA'+fi);if(fa&&faqAs[fi])h=h.replace(faqAs[fi],'class="faq-item__a"><p>'+esc(fa)+'</p></div>');
+    }
+  }
+
+  /* EXPLORE NET7 */
+  var eh=g('exploreHeading');if(eh)h=h.replace(/(<h1 class="explore-v2__heading">)[^<]+(<\/h1>)/,'$1'+esc(eh)+'$2');
+  var accTs=h.match(/class="acc-item__title">([^<]+)<\/span>/g)||[];
+  var accDs=h.match(/class="acc-item__desc">([^<]+)<\/p>/g)||[];
+  for(var ai=0;ai<4;ai++){
+    var at=g('accTitle'+ai);if(at&&accTs[ai])h=h.replace(accTs[ai],'class="acc-item__title">'+esc(at)+'</span>');
+    var ad=g('accDesc'+ai);if(ad&&accDs[ai])h=h.replace(accDs[ai],'class="acc-item__desc">'+esc(ad)+'</p>');
+  }
+
+  /* ADMIN DASHBOARD */
+  var adh2=g('adminDashHeading');if(adh2)h=h.replace(/(<h2 class="admin-dash-v2__heading">)[^<]+(<\/h2>)/,'$1'+esc(adh2)+'$2');
+  var adTs2=h.match(/class="admin-feat__title">([^<]+)<\/p>/g)||[];
+  var adDs2=h.match(/class="admin-feat__desc">([^<]+)<\/p>/g)||[];
+  for(var di=0;di<4;di++){
+    var dt=g('adminFeatTitle'+di);if(dt&&adTs2[di])h=h.replace(adTs2[di],'class="admin-feat__title">'+esc(dt)+'</p>');
+    var dd=g('adminFeatDesc'+di);if(dd&&adDs2[di])h=h.replace(adDs2[di],'class="admin-feat__desc">'+esc(dd)+'</p>');
+  }
+
+  /* PRICING */
+  var prH=g('pricingHeading');if(prH)h=h.replace(/(<h1 class="pricing-v2__heading">)[^<]+(<\/h1>)/,'$1'+esc(prH)+'$2');
+  var pBadges=h.match(/class="pcard-v2__badge(?:\s+pcard-v2__badge--\w+)?">([^<]+)<\/span>/g)||[];
+  var pTags=h.match(/class="pcard-v2__tag">([\s\S]*?)<\/p>/g)||[];
+  var pPrices=h.match(/class="pcard-v2__price">([^<]+)<\/p>/g)||[];
+  var pPeriods=h.match(/class="pcard-v2__price-period">([^<]+)<\/p>/g)||[];
+  var pCtas=h.match(/class="pcard-v2__cta[^"]*"[^>]*>([^<]+)<\/button>/g)||[];
+  for(var pi=0;pi<3;pi++){
+    var pb=g('planBadge'+pi);if(pb&&pBadges[pi])h=h.replace(pBadges[pi],pBadges[pi].replace(/>([^<]+)<\/span>/,'>'+esc(pb)+'</span>'));
+    var ptag=g('planTag'+pi);if(ptag&&pTags[pi])h=h.replace(pTags[pi],'class="pcard-v2__tag">'+esc(ptag)+'</p>');
+    var pp=g('planPrice'+pi);if(pp&&pPrices[pi])h=h.replace(pPrices[pi],'class="pcard-v2__price">'+esc(pp)+'</p>');
+    var ppd=g('planPeriod'+pi);if(ppd&&pPeriods[pi])h=h.replace(pPeriods[pi],'class="pcard-v2__price-period">'+esc(ppd)+'</p>');
+    var pc=g('planCta'+pi);if(pc&&pCtas[pi])h=h.replace(pCtas[pi],pCtas[pi].replace(/>([^<]+)<\/button>/,'>'+esc(pc)+'</button>'));
+    var pfRaw=g('planFeats'+pi);
+    if(pfRaw){
+      var pfLines=pfRaw.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+      var chkSvg='<svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>';
+      var newFeats=pfLines.map(function(l){return '<div class="pcard-v2__feat"><span class="pcard-v2__feat-check">'+chkSvg+'</span>'+esc(l)+'</div>';}).join('\n            ');
+      var featBlks=h.match(/<div class="pcard-v2__features">[\s\S]*?<\/div>\s*\n\s*<\/div>/g)||[];
+      if(featBlks[pi])h=h.replace(featBlks[pi],'<div class="pcard-v2__features">\n            '+newFeats+'\n          </div>\n        </div>');
+    }
+  }
+
+  /* IMAGES */
+  var logoSrc=g('logoSrc');if(logoSrc)h=h.replace(/(class="site-logo-svg"[^>]*src=")[^"]+("|)/g,function(m,p1,p2){return p1+logoSrc+p2;});
+  var heroImgSrc=g('heroImgSrc');if(heroImgSrc)h=h.replace(/(id="heroImg"[^>]*src=")[^"]+("|)/,function(m,p1,p2){return p1+heroImgSrc+p2;});
+  var heroBgSrc=g('heroBgSrc');if(heroBgSrc)h=h.replace(/url\("assets\/images\/hero-bg\.[^"]+"\)/,function(){return 'url("'+heroBgSrc+'")';});  
+  var ctaBannerImgSrc=g('ctaBannerImgSrc');
+  if(ctaBannerImgSrc){h=h.replace(/(id="ctaBannerImg"[^>]*src=")[^"]+("|)/,function(m,p1,p2){return p1+ctaBannerImgSrc+p2;});h=h.replace(/(id="pricingCtaImg"[^>]*src=")[^"]+("|)/,function(m,p1,p2){return p1+ctaBannerImgSrc+p2;});}
+  var featHeroSrc=g('featuresHeroImg');if(featHeroSrc)h=h.replace(/(id="exploreImg"[^>]*src=")[^"]+("|)/,function(m,p1,p2){return p1+featHeroSrc+p2;});
+  /* Admin images */
+  var adminLaptop=g('adminDashImg2');
+  if(adminLaptop)h=h.replace(/(class="admin-dash-v2__laptop"[^>]*src="|src=")[^"]+("[^>]*class="admin-dash-v2__laptop")/g,function(m){return m.replace(/(src=")[^"]+("|)/,function(m,p1,p2){return p1+adminLaptop+p2;});});
+  var adminBg=g('adminDashBgSrc');
+  if(adminBg)h=h.replace(/(class="admin-dash-v2__bg"[^>]*src="|src=")[^"]+("[^>]*class="admin-dash-v2__bg")/g,function(m){return m.replace(/(src=")[^"]+("|)/,function(m,p1,p2){return p1+adminBg+p2;});});
+  var ic1=g('adminIcon1Src');if(ic1)h=h.replace(/(id="adminIcon1"[^>]*src="|src=")[^"]+("[^>]*id="adminIcon1")/g,function(m){return m.replace(/(src=")[^"]+("|)/,function(m,p1,p2){return p1+ic1+p2;});});
+  var ic2=g('adminIcon2Src');if(ic2)h=h.replace(/(id="adminIcon2"[^>]*src="|src=")[^"]+("[^>]*id="adminIcon2")/g,function(m){return m.replace(/(src=")[^"]+("|)/,function(m,p1,p2){return p1+ic2+p2;});});
+  var ic3=g('adminIcon3Src');if(ic3)h=h.replace(/(id="adminIcon3"[^>]*src="|src=")[^"]+("[^>]*id="adminIcon3")/g,function(m){return m.replace(/(src=")[^"]+("|)/,function(m,p1,p2){return p1+ic3+p2;});});
+  var ic4=g('adminIcon4Src');if(ic4)h=h.replace(/(id="adminIcon4"[^>]*src="|src=")[^"]+("[^>]*id="adminIcon4")/g,function(m){return m.replace(/(src=")[^"]+("|)/,function(m,p1,p2){return p1+ic4+p2;});});
+
+  /* CONTACT */
+  var addr=g('contactAddress');
+  if(addr){h=h.replace(/(<p class="footer-v2__address">)[^<]+(<\/p>)/g,function(m,p1,p2){return p1+esc(addr)+p2;});h=h.replace(/(<p class="contact-addr-text">)[^<]+(<\/p>)/g,function(m,p1,p2){return p1+esc(addr)+p2;});}
+  var cemail=g('contactEmail');
+  if(cemail){var erows=h.match(/<div class="footer-v2__contact-row">[\s\S]*?<\/div>/g)||[];erows.forEach(function(r){if(r.indexOf('Email')>=0)h=h.replace(r,r.replace(/<span class="footer-v2__contact-val">[^<]+<\/span>/,'<span class="footer-v2__contact-val">'+esc(cemail)+'</span>'));});}
+  var cphone=g('contactPhone');
+  if(cphone){var prows=h.match(/<div class="footer-v2__contact-row">[\s\S]*?<\/div>/g)||[];prows.forEach(function(r){if(r.indexOf('Sales')>=0)h=h.replace(r,r.replace(/<span class="footer-v2__contact-val">[^<]+<\/span>/,'<span class="footer-v2__contact-val">'+esc(cphone)+'</span>'));});}
+
+  return h;
+}
+
+
+/* ─── PRESERVED FUNCTIONS (FAQ page, legal, resources, about) ─── */
+
+function popFaqPage(){
+  /* Hero */
+  var hm=H.match(/class="faqp-hero__heading">([^<]+)<\/h1>/);
+  if(hm)s('faqPageHeading',hm[1].trim());
+  var sm=H.match(/class="faqp-hero__sub">([^<]+)<\/p>/);
+  if(sm)s('faqPageSub',sm[1].trim());
+
+  /* Extract faqData from the script — handle any indentation of closing ]; */
+  var fdm=H.match(/var faqData\s*=\s*(\[[\s\S]*?\n\s*\]);/);
+  if(!fdm)return;
+  try{
+    /* Safe eval via Function */
+    var data=(new Function('return '+fdm[1]))();
+    cmsData.faqTopics=JSON.parse(JSON.stringify(data));
+    renderFaqTopicsEditor();
+  }catch(e){console.error('faqData parse error',e);}
+}
+
+function renderFaqTopicsEditor(){
+  var topics=cmsData.faqTopics||[];
+  var html='';
+  if(!topics.length){
+    html='<p style="color:#8A96A6;font-size:13px;padding:8px 0">No topics yet. Click "+ Add Topic" to create one.</p>';
+    document.getElementById('faqTopicsEditor').innerHTML=html;
+    return;
+  }
+  topics.forEach(function(topic,ti){
+    html+='<div class="faq-editor-item" id="cti'+ti+'" style="margin-bottom:12px">'
+      /* Topic header */
+      +'<div class="faq-editor-item__header" onclick="tfi2('+ti+')" style="justify-content:space-between">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<span class="faq-editor-item__num">'+(ti+1)+'</span>'
+      +'<span class="faq-editor-item__q" id="ctip'+ti+'">'+esc(topic.topic||'New Topic')+'</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<span style="font-size:11px;color:#8A96A6">'+topic.qa.length+' Q&amp;A'+(topic.qa.length!==1?'s':'')+'</span>'
+      +'<button onclick="deleteFaqTopic('+ti+',event)" style="background:#FEF2F2;border:none;color:#EF4444;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer">✕ Delete</button>'
+      +'<span class="faq-editor-item__toggle"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>'
+      +'</div></div>'
+      /* Topic body */
+      +'<div class="faq-editor-item__body" style="padding:16px">'
+      /* Topic name */
+      +'<div class="field"><label>Topic Name</label>'
+      +'<input type="text" value="'+esc(topic.topic)+'" oninput="cmsData.faqTopics['+ti+'].topic=this.value;document.getElementById(\'ctip'+ti+'\').textContent=this.value;markDirty(\'faqpage\')"/></div>'
+      /* Topic icon */
+      +'<div class="field"><label>Topic Icon</label>'
+      +'<div style="display:flex;align-items:center;gap:12px;padding:10px;border:2px dashed #D8E2F4;border-radius:8px;background:#FAFBFF">'
+      +'<div style="width:56px;height:56px;background:#EEF3FF;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0" id="cticonPrev'+ti+'">'+topic.icon+'</div>'
+      +'<div><input type="file" accept="image/*,.svg" onchange="handleFaqTopicIcon('+ti+',this)"/>'
+      +'<div class="field-hint" style="margin-top:4px">Upload SVG or PNG icon · 64×64px recommended</div></div>'
+      +'</div></div>'
+      /* Q&As */
+      +'<div class="section-label" style="margin-top:4px">Questions &amp; Answers</div>'
+      +'<div id="ctqas'+ti+'">';
+
+    topic.qa.forEach(function(qa,qi){
+      html+='<div style="border:1.5px solid #E8EDF7;border-radius:8px;padding:12px;margin-bottom:8px;background:#FAFBFF">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<span style="font-size:11px;font-weight:700;color:#1A6BFF">Q'+(qi+1)+'</span>'
+        +'<button onclick="deleteFaqQA('+ti+','+qi+',event)" style="background:#FEF2F2;border:none;color:#EF4444;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;cursor:pointer">✕</button>'
+        +'</div>'
+        +'<div class="field" style="margin-bottom:8px"><label>Question</label>'
+        +'<input type="text" value="'+esc(qa.q)+'" oninput="cmsData.faqTopics['+ti+'].qa['+qi+'].q=this.value;markDirty(\'faqpage\')"/></div>'
+        +'<div class="field"><label>Answer</label>'
+        +'<textarea rows="3" oninput="cmsData.faqTopics['+ti+'].qa['+qi+'].a=this.value;markDirty(\'faqpage\')">'+esc(qa.a)+'</textarea></div>'
+        +'</div>';
+    });
+
+    html+='<button onclick="addFaqQA('+ti+')" class="btn btn-outline btn-sm" style="margin-top:4px">+ Add Question</button>'
+      +'</div></div></div>';
+  });
+  document.getElementById('faqTopicsEditor').innerHTML=html;
+}
+
+function tfi2(i){
+  var el=document.getElementById('cti'+i);
+  if(el)el.classList.toggle('open');
+}
+
+function handleFaqTopicIcon(ti,inp){
+  var file=inp.files[0];if(!file)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var dataUrl=e.target.result;
+    var imgTag='<img src="'+dataUrl+'" style="width:48px;height:48px;object-fit:contain"/>';
+    cmsData.faqTopics[ti].icon=imgTag;
+    var prev=document.getElementById('cticonPrev'+ti);
+    if(prev)prev.innerHTML=imgTag;
+    markDirty('faqpage');
+    toast('✓ Icon uploaded for topic '+(ti+1));
+  };
+  r.readAsDataURL(file);inp.value='';
+}
+
+function addFaqTopic(){
+  if(!cmsData.faqTopics)cmsData.faqTopics=[];
+  var id='topic-'+Date.now();
+  cmsData.faqTopics.push({
+    id:id,
+    topic:'New Topic',
+    icon:'<svg width="48" height="48" fill="none" stroke="#1A6BFF" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>',
+    qa:[{q:'Sample question',a:'Sample answer'}]
+  });
+  markDirty('faqpage');
+  renderFaqTopicsEditor();
+  /* Auto-open the new topic */
+  var newIdx=cmsData.faqTopics.length-1;
+  var el=document.getElementById('cti'+newIdx);
+  if(el)el.classList.add('open');
+  toast('✓ New topic added');
+}
+
+function deleteFaqTopic(ti,ev){
+  ev.stopPropagation();
+  if(!confirm('Delete topic "'+cmsData.faqTopics[ti].topic+'" and all its Q&As?'))return;
+  cmsData.faqTopics.splice(ti,1);
+  markDirty('faqpage');
+  renderFaqTopicsEditor();
+  toast('✓ Topic deleted');
+}
+
+function addFaqQA(ti){
+  cmsData.faqTopics[ti].qa.push({q:'New question',a:'Answer goes here'});
+  markDirty('faqpage');
+  renderFaqTopicsEditor();
+  /* Re-open the topic */
+  var el=document.getElementById('cti'+ti);
+  if(el)el.classList.add('open');
+}
+
+function deleteFaqQA(ti,qi,ev){
+  ev.stopPropagation();
+  cmsData.faqTopics[ti].qa.splice(qi,1);
+  markDirty('faqpage');
+  renderFaqTopicsEditor();
+  var el=document.getElementById('cti'+ti);
+  if(el)el.classList.add('open');
+}
+
+function applyFaqPage(h){
+  /* Hero text */
+  var fph=g('faqPageHeading');
+  var fps=g('faqPageSub');
+  if(fph)h=h.replace(/(class="faqp-hero__heading">)[^<]+(<\/h1>)/,function(m,p1,p2){return p1+fph+p2;});
+  if(fps)h=h.replace(/(class="faqp-hero__sub">)[^<]+(<\/p>)/,function(m,p1,p2){return p1+fps+p2;});
+
+  /* Rebuild faqData JS from cmsData.faqTopics */
+  if(!cmsData.faqTopics||!cmsData.faqTopics.length)return h;
+
+  var lines=[];
+  cmsData.faqTopics.forEach(function(t){
+    var qaLines=t.qa.map(function(qa){
+      return '      { q: '+JSON.stringify(qa.q)+', a: '+JSON.stringify(qa.a)+' }';
+    }).join(',\n');
+    /* Escape icon for JS string - use JSON.stringify to make it a safe string */
+    lines.push(
+      '  {\n'
+      +'    id: '+JSON.stringify(t.id||'topic-'+Math.random().toString(36).substr(2,6))+',\n'
+      +'    topic: '+JSON.stringify(t.topic)+',\n'
+      +'    icon: '+JSON.stringify(t.icon)+',\n'
+      +'    qa: [\n'+qaLines+'\n    ]\n'
+      +'  }'
+    );
+  });
+  var newFaqData='var faqData = [\n'+lines.join(',\n')+'\n];';
+
+  /* Replace existing faqData in the script — handle any indentation of closing ];
+     Use a function replacement to avoid $ being treated as backreference */
+  h=h.replace(/var faqData\s*=\s*\[[\s\S]*?\n\s*\];\n/, function(){ return newFaqData+'\n'; });
+  return h;
+}
+
+function popFaqPage_init(){
+  if(!cmsData.faqTopics)popFaqPage();
+}
+
+function popResources(){
+  var rh=H.match(/class="res-heading">([^<]+)<\/h1>/);if(rh)s('resHeading',rh[1].trim());
+  var rs=H.match(/class="res-sub">([^<]+)<\/p>/);if(rs)s('resSub',rs[1].trim());
+  var gh=H.match(/class="res-guide__heading">([^<]+)<\/h2>/);if(gh)s('guideHeading',gh[1].trim());
+  var gss=H.match(/class="res-guide__sub">([^<]+)<\/p>/);if(gss)s('guideSub',gss[1].trim());
+  var yt=H.match(/data-videoid="([^"]+)"/);if(yt)s('youtubeId',yt[1]);
+  var ft=H.match(/class="feat-title">([^<]+)<\/h3>/g)||[];
+  var fd=H.match(/class="feat-desc">([^<]+)<\/p>/g)||[];
+  var html='';
+  for(var i=0;i<8;i++){
+    var t=ft[i]?ft[i].replace(/class="feat-title">|<\/h3>/g,''):'';
+    var d=fd[i]?fd[i].replace(/class="feat-desc">|<\/p>/g,''):'';
+    html+='<div class="feat-editor-item" id="fei'+i+'">'
+      +'<div class="feat-editor-item__header" onclick="tfei('+i+')">'
+      +'<span class="feat-editor-item__num">'+(i+1)+'</span>'
+      +'<span class="feat-editor-item__title" id="feit'+i+'">'+esc(t)+'</span>'
+      +'<span class="feat-editor-item__toggle"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>'
+      +'<div class="feat-editor-item__body">'
+      +'<div class="field"><label>Title</label><input type="text" id="featTitle'+i+'" value="'+esc(t)+'" oninput="document.getElementById(\'feit'+i+'\').textContent=this.value"/></div>'
+      +'<div class="field"><label>Description</label><textarea id="featDesc'+i+'" rows="2">'+esc(d)+'</textarea></div>'
+      +'</div></div>';
+  }
+  document.getElementById('featEditor').innerHTML=html;
+}
+
+function popAbout(){
+  var ah=H.match(/class="about-hero__heading">([^<]+)<\/h1>/);if(ah)s('aboutHeading',ah[1].trim());
+  var pts=H.match(/class="about-hero__points"[\s\S]*?<\/ul>/);
+  if(pts){
+    var items=pts[0].match(/<li>[\s\S]*?<\/li>/g)||[];
+    for(var i=0;i<3;i++){
+      var item=items[i]||'';
+      var text=item.replace(/<span[^>]*>[^<]*<\/span>/,'').replace(/<[^>]+>/g,'').trim();
+      s('aboutPoint'+i,text);
+    }
+  }
+}
+
+function popTerms(){
+  var ti=H.match(/class="legal-page__intro">([^<]+)<\/p>/);if(ti)s('termsIntro',ti[1].trim());
+  var tu=H.match(/class="legal-page__updated">([^<]+)<\/p>/);if(tu)s('termsUpdated',tu[1].trim().replace('Latest Updated:','').trim());
+  buildLegalEditor('termsEditor',H,'tos');
+}
+
+function popPrivacy(){
+  var pi=H.match(/class="legal-page__intro">([^<]+)<\/p>/);
+  var pArr=H.match(/class="legal-page__intro">([^<]+)<\/p>/g)||[];
+  if(pArr[1])s('privacyIntro',pArr[1].replace(/class="legal-page__intro">|<\/p>/g,'').trim());
+  var pu=H.match(/class="legal-page__updated">([^<]+)<\/p>/g)||[];
+  if(pu[1])s('privacyUpdated',pu[1].replace(/class="legal-page__updated">|<\/p>/g,'').trim().replace('Latest Updated:','').trim());
+  buildLegalEditor('privacyEditor',H,'pp');
+}
+
+function buildLegalEditor(elId,html,prefix){
+  var titles=html.match(/class="legal-section__title">([^<]+)<\/h2>/g)||[];
+  var html2='';
+  for(var i=0;i<titles.length&&i<4;i++){
+    var t=titles[i].replace(/class="legal-section__title">|<\/h2>/g,'').trim();
+    html2+='<div class="legal-item" id="li_'+prefix+'_'+i+'">'
+      +'<div class="legal-item__header" onclick="tli(\''+prefix+'\','+i+')">'
+      +'<span class="legal-item__title">'+esc(t)+'</span>'
+      +'<span class="legal-item__toggle"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span></div>'
+      +'<div class="legal-item__body">'
+      +'<div class="field"><label>Section Title</label><input type="text" id="lt_'+prefix+'_'+i+'" value="'+esc(t)+'"/></div>'
+      +'<div class="field"><label>Content</label><textarea id="lc_'+prefix+'_'+i+'" rows="6">'+getLegalContent(html,i,prefix)+'</textarea></div>'
+      +'</div></div>';
+  }
+  document.getElementById(elId).innerHTML=html2;
+}
+
+function getLegalContent(html,idx,prefix){
+  var sections=html.match(/class="legal-section"[^>]*>[\s\S]*?(?=class="legal-section"|<\/article>)/g)||[];
+  if(!sections[idx])return'';
+  var paras=sections[idx].match(/<p>([^<]+)<\/p>/g)||[];
+  return paras.map(function(p){return p.replace(/<[^>]+>/g,'').trim()}).join('\n\n');
+}
+
+function popContact(){
+  var addr=H.match(/class="footer__contact-text">([^<]+)<\/p>\s*<p class="footer__contact-sub">Visit by appointment/);
+  if(addr)s('contactAddress',addr[1].trim());
+  var em=H.match(/href="mailto:([^"]+)"/);if(em)s('contactEmail',em[1]);
+  var ph=H.match(/class="footer__contact-text">\+([^<]+)<\/p>/);if(ph)s('contactPhone','+'+ph[1].trim());
+  var oh=H.match(/Office Hours:\s*([^<]+)<\/p>/);if(oh)s('contactHours',oh[1].trim());
+  var ft=H.match(/class="footer__tagline">([^<]+)<\/p>/);if(ft)s('footerTagline',ft[1].trim());
+  var fc=H.match(/class="h2-footer__copy">([^<]+)<\/p>/)||H.match(/class="footer__copy">([^<]+)<\/p>/);
+  if(fc)s('footerCopy',fc[1].trim());
+
+  /* GTM Container ID — read from commented placeholder */
+  var gtmM=H.match(/GTM-[A-Z0-9]{4,10}/);
+  var gtmId=gtmM?gtmM[0]:'';
+  s('gtmContainerId', gtmId==='GTM-XXXXXXX'?'':gtmId);
+  var statusEl=document.getElementById('gtmStatus');
+  if(statusEl){
+    if(gtmId&&gtmId!=='GTM-XXXXXXX'){
+      statusEl.innerHTML='<span style="color:#10b981;font-weight:700">✓ ID saved:</span> '+gtmId+' — uncomment the GTM snippets in the HTML to activate tracking.';
+    } else {
+      statusEl.innerHTML='<span style="color:#F59E0B;font-weight:700">⚠ Not configured</span> — enter your GTM Container ID above and save.';
+    }
+  }
+}
+
+var PAGE_OPTS = [
+  {v:'home',     l:'Home'},
+  {v:'features', l:'Features'},
+  {v:'pricing',  l:'Pricing'},
+  {v:'faq-page', l:'FAQ'},
+  {v:'about',    l:'About Us'},
+  {v:'contact',  l:'Contact'},
+  {v:'resources',l:'Resources'},
+  {v:'terms',    l:'Terms of Service'},
+  {v:'privacy',  l:'Privacy Policy'},
+];
+
+function buildPageSelect(selId, currentPage){
+  var sel=document.getElementById(selId);
+  if(!sel)return;
+  sel.innerHTML=PAGE_OPTS.map(function(p){
+    return '<option value="'+p.v+'"'+(p.v===currentPage?' selected':'')+'>'+p.l+'</option>';
+  }).join('');
+}
+
+function initPageSelects(){
+  /* Read current data-page from net7.html for each button */
+  function dp(pattern){
+    var m=H.match(pattern);
+    return m?m[1]:'home';
+  }
+  buildPageSelect('heroCta1Page',    dp(/class="btn h2-btn-primary"[^>]*data-page="([^"]+)"/));
+  buildPageSelect('heroCta2Page',    dp(/class="btn h2-btn-ghost"[^>]*data-page="([^"]+)"/));
+  buildPageSelect('ctaBannerBtnPage',dp(/class="btn h2-btn-primary h2-cta-banner__btn"[^>]*data-page="([^"]+)"/));
+  buildPageSelect('faqStillBtnPage', dp(/class="btn h2-btn-primary h2-faq__still-btn"[^>]*data-page="([^"]+)"/));
+  /* Navbar action buttons */
+  var btns=H.match(/<div class="navbar__actions">([\s\S]*?)<\/div>/);
+  if(btns){
+    buildPageSelect('navBtn1Page', dp(/class="btn btn-outline"[^>]*data-page="([^"]+)"/));
+    buildPageSelect('navBtn2Page', dp(/class="btn btn-primary"[^>]*data-page="([^"]+)"/));
+  }
+}
+
+function dp(pattern){
+    var m=H.match(pattern);
+    return m?m[1]:'home';
+  }
+
+function setStatMode(i,mode){
+  document.getElementById('statMode'+i).value=mode;
+  document.getElementById('statNumSection'+i).style.display  = mode==='number'?'block':'none';
+  document.getElementById('statIconSection'+i).style.display = mode==='icon'?'block':'none';
+  document.getElementById('statModeNum'+i).className  = 'btn btn-sm '+(mode==='number'?'btn-primary':'btn-outline');
+  document.getElementById('statModeIcon'+i).className = 'btn btn-sm '+(mode==='icon'?'btn-primary':'btn-outline');
+  markDirty('stats');
+}
+
+function handleStatIcon(i,inp){
+  var file=inp.files[0]; if(!file)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    statIconData[i]={dataUrl:e.target.result,name:file.name,mime:file.type};
+    var prev=document.getElementById('statIconPreview'+i);
+    var lbl =document.getElementById('statIconLabel'+i);
+    if(prev){prev.src=e.target.result;prev.style.display='block'}
+    if(lbl) lbl.textContent='Uploaded: '+file.name;
+    markDirty('stats');
+    toast('✓ Stat '+(i+1)+' icon uploaded');
+  };
+  r.readAsDataURL(file); inp.value='';
+}
+
+function tfi(i){var e=document.getElementById('fi'+i);if(e)e.classList.toggle('open')}
+
+function tfei(i){var e=document.getElementById('fei'+i);if(e)e.classList.toggle('open')}
+
+function tli(p,i){var e=document.getElementById('li_'+p+'_'+i);if(e)e.classList.toggle('open')}
+
+function handleImg(key,inp){
+  var file=inp.files[0];if(!file)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    IMG[key]={dataUrl:e.target.result,mime:file.type};
+    var prev=document.getElementById('preview-'+key);
+    var ph=document.getElementById('placeholder-'+key);
+    if(prev){prev.src=e.target.result;prev.style.display='block'}
+    if(ph)ph.style.display='none';
+    toast('✓ '+file.name+' ready — save to apply');
+    markDirty('images');
+  };
+  r.readAsDataURL(file); inp.value='';
+}
+
+function extractBlock(piece){
+    /* Find the > that closes the opening tag, then depth-count from there */
+    var start=piece.indexOf('>');
+    if(start===-1)return'';
+    var body=piece.substring(start+1);
+    /* depth starts at 1 (we are inside the opening div).
+       Walk forward counting <div (depth++) and </div> (depth--).
+       Stop and return content when depth reaches 0. */
+    var depth=1,pos=0,end=-1;
+    while(pos<body.length){
+      var o=body.indexOf('<div',pos);
+      var c=body.indexOf('<\/div>',pos);
+      if(c===-1)break;
+      if(o!==-1&&o<c){depth++;pos=o+4;}
+      else{
+        depth--;
+        if(depth===0){end=c;break;}
+        pos=c+6;
+      }
+    }
+    return end>-1?body.substring(0,end):body;
+  }
+
+
+
+/* ── Save ── */
+function saveFile(){
+  if(!H){toast('✗ Load net7.html first');return}
+  var updated=applyAll();
+  /* Ensure IS_FILE guard is correct in downloaded file */
+  updated=updated.replace(
+    /var IS_FILE\s*=[\s\S]*?;(?:\s*\/\*[\s\S]*?\*\/)?/,
+    'var IS_FILE = (function(){ try { var proto=window.location.protocol; if(proto==="file:"||proto==="about:") return true; if(window.self!==window.top) return true; } catch(e){return true;} return false; }());'
+  );
+  var blob=new Blob([updated],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=fileName;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('✓ '+fileName+' saved and downloaded!');
+  setStatus('loaded','Last saved at '+new Date().toLocaleTimeString(),fileName);
+  isDirty=false;
+  clearAllDirty();
+}
+
+window.addEventListener('beforeunload',function(e){if(isDirty){e.preventDefault();e.returnValue=''}});
+document.addEventListener('input',function(e){
+  if(e.target.closest('.cms-content')&&H){
+    var panelId=getPanelForElement(e.target);
+    markDirty(panelId);
+  }
+});
+
+</script>
+</body>
+</html>

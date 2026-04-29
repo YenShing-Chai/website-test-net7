@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Net7 – Your Network Is Your Greatest Asset</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="navbar__inner">
+    <a class="navbar__logo" data-page="home">
+      <img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/>
+    </a>
+    <nav class="navbar__links">
+      <a class="nav-link active" data-page="home">Home</a>
+      <a class="nav-link" data-page="features">Features</a>
+      <a class="nav-link" data-page="pricing">Pricing</a>
+      <a class="nav-link" data-page="faq-page">FAQ</a>
+    </nav>
+    <div class="navbar__actions">
+      <a class="btn btn-outline" onclick="openRequestDemo()" style="cursor:pointer">Request Demo</a>
+      <a class="btn btn-primary" data-page="pricing">Start Today</a>
+      <button class="icon-btn" id="searchBtn" aria-label="Search" onclick="openSearch()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="account-wrap">
+        <button class="icon-btn" id="accountBtn" aria-label="Account" onclick="toggleComingSoon()">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg>
+        </button>
+        <div class="coming-soon-bubble" id="comingSoonBubble">
+          <span class="coming-soon-bubble__emoji">&#x1F680;</span>
+          <div><p class="coming-soon-bubble__title">Coming Soon</p><p class="coming-soon-bubble__sub">Account portal is on its way!</p></div>
+        </div>
+      </div>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a class="nav-link" data-page="home">Home</a>
+    <a class="nav-link" data-page="features">Features</a>
+    <a class="nav-link" data-page="pricing">Pricing</a>
+    <a class="nav-link" data-page="faq-page">FAQ</a>
+    <a class="btn btn-outline" onclick="openRequestDemo()" style="cursor:pointer">Request Demo</a>
+    <a class="btn btn-primary" data-page="pricing">Start Today</a>
+  </div>
+</header>
+
+<div id="page-home" class="page active">
+
+  <!-- HERO -->
+  <section class="hero-v2">
+    <div class="hero-v2__content js-reveal">
+      <h1 class="hero-v2__heading">Built for Networking.<br>Made for Business.</h1>
+      <p class="hero-v2__sub">Capture every connection. Automate every follow-up. Multiply your network. Meet the AI engine that helps your team close leads faster.</p>
+      <div class="hero-v2__ctas">
+        <button class="hero-v2__cta-primary" onclick="showPage('pricing')">Get Started for Free</button>
+        <button class="hero-v2__cta-ghost" onclick="showPage('resources')">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Watch Demo
+        </button>
+      </div>
+    </div>
+    <div class="hero-v2__visual js-reveal" style="--delay:.2s" aria-hidden="true">
+      
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="hiw-v2">
+    <div class="hiw-v2__inner">
+      <h2 class="hiw-v2__heading">Digitalise Your Networking in 5 Steps</h2>
+      <div class="hiw-v2__grid">
+        <div class="step-v2 js-reveal">
+          <div class="step-v2__num">01</div>
+          <h3 class="step-v2__title">Scan</h3>
+          <p class="step-v2__desc">Capture full details of business cards with AI-powered OCR capabilities.</p>
+        </div>
+        <div class="step-v2 js-reveal" style="--delay:.08s">
+          <div class="step-v2__num">02</div>
+          <h3 class="step-v2__title">Enrich</h3>
+          <p class="step-v2__desc">Add information such as company intel, individual background, etc for a detailed profile. It's more than a name on a card.</p>
+        </div>
+        <div class="step-v2 step-v2--active js-reveal" style="--delay:.16s">
+          <div class="step-v2__num">03</div>
+          <h3 class="step-v2__title">Locate</h3>
+          <p class="step-v2__desc">Geotagging features let you record where the card was scanned and locate your contact's company on a map.</p>
+        </div>
+      </div>
+      <div class="hiw-v2__grid--row2">
+        <div class="step-v2 js-reveal" style="--delay:.24s">
+          <div class="step-v2__num">04</div>
+          <h3 class="step-v2__title">Sync</h3>
+          <p class="step-v2__desc">Save time and eliminate manual data entry with secure data flow to your organization's admin portal.</p>
+        </div>
+        <div class="step-v2 js-reveal" style="--delay:.32s">
+          <div class="step-v2__num">05</div>
+          <h3 class="step-v2__title">Activate</h3>
+          <p class="step-v2__desc">Monitor progress, assign follow-ups, and close leads with automated reminders to avoid disruptions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALUE PROPOSITION -->
+  <section class="valprop-v2">
+    <div class="valprop-v2__inner">
+      <h2 class="valprop-v2__heading">How to Capitalise on Your Networking Data</h2>
+      <div class="valprop-v2__stats">
+        <div class="vstat js-reveal">
+          <div class="vstat__num">80<span class="vstat__unit">%</span></div>
+          <p class="vstat__title">Reduction in Lost Leads</p>
+          <p class="vstat__desc">Instantly scan and capture 100% of business cards into your workflow. When your rep leaves, their network stays and is protected in your company portal.</p>
+        </div>
+        <div class="vstat js-reveal" style="--delay:.08s">
+          <div class="vstat__num">40<span class="vstat__unit">%</span></div>
+          <p class="vstat__title">Faster Onboarding</p>
+          <p class="vstat__desc">Replace manual reporting with an intelligent task hub that activates leads instantly. Save hours on weekly status meetings.</p>
+        </div>
+        <div class="vstat js-reveal" style="--delay:.16s">
+          <div class="vstat__icon">
+            <svg width="48" height="48" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <p class="vstat__title">AI-Driven Insights</p>
+          <p class="vstat__desc">Identify high-value connections before you engage. Walk into every meeting knowing exactly who can move the needle.</p>
+        </div>
+        <div class="vstat js-reveal" style="--delay:.24s">
+          <div class="vstat__icon">
+            <svg width="48" height="48" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <p class="vstat__title">Competitive Advantage</p>
+          <p class="vstat__desc">Multiply your reach through mutual connections you intend to meet.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <div class="cta-banner-v2-wrap">
+    <div class="cta-banner-v2">
+      <div class="cta-banner-v2__bg">
+        <img src="assets/images/cta-banner-team.png" alt="Professional at laptop" id="ctaBannerImg"/>
+      </div>
+      <div class="cta-banner-v2__overlay"></div>
+      <div class="cta-banner-v2__text js-reveal">
+        <h2 class="cta-banner-v2__heading">Outpace Your Competition With Our AI Networking Platform Today!</h2>
+        <div><button class="btn-pill-dark" onclick="showPage('pricing')">Get Started for Free</button></div>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+
+  
+  <!-- CAPTURE AND GROW -->
+  <section class="capture-v2">
+    <div class="capture-v2__inner">
+      <h2 class="capture-v2__heading">Capture and Grow Today</h2>
+      <p class="capture-v2__sub">Let's discuss how we can help you build meaningful relationships and achieve success through powerful networking solutions.</p>
+      <div class="capture-v2__body">
+        <div class="capture-v2__promo" id="capturePromo">
+          <h3 class="capture-v2__promo-heading">You meet people every day but forget most of them.</h3>
+          <p class="capture-v2__promo-sub">Without the right tools, it's easy to forget faces, lose context, and miss the chance to follow up.</p>
+        </div>
+        <div class="capture-v2__form-wrap">
+          <h3 class="capture-v2__form-title">Get Started</h3>
+          <p class="capture-v2__form-sub">Fill out the form below and we'll get back to you within 24 hours.</p>
+          <form class="contact-form" id="form-home" onsubmit="validateAndSubmit(event,this)">
+            <input type="hidden" name="access_key" value="f0b0b0b0-0000-0000-0000-000000000000"/>
+            <input type="hidden" name="subject" value="New Demo Request – Net7"/>
+            <input type="hidden" name="from_name" value="Net7 Website"/>
+            <div class="form-success"><span class="form-success__icon">&#x2713;</span><span>Thank you! We'll be in touch within 24 hours.</span></div>
+            <div class="contact-form__field"><label for="home-name">Full Name <span style="color:#EF4444">*</span></label><input id="home-name" type="text" placeholder="Enter your name" data-validate="name" data-label="Full Name" autocomplete="name"/><span class="field-error"></span></div>
+            <div class="contact-form__field"><label for="home-email">Email Address <span style="color:#EF4444">*</span></label><input id="home-email" type="email" placeholder="you@company.com" data-validate="email" data-label="Email Address" autocomplete="email"/><span class="field-error"></span></div>
+            <div class="contact-form__field"><label for="home-company">Company <span style="color:#EF4444">*</span></label><input id="home-company" type="text" placeholder="Your company name" data-validate="required" data-label="Company" autocomplete="organization"/><span class="field-error"></span></div>
+            <div class="contact-form__field"><label for="home-message">Message</label><textarea id="home-message" placeholder="Tell us about your needs..." rows="4"></textarea></div>
+            <button type="submit" class="btn btn-primary btn-full">Send Message <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer-v2">
+    <div class="footer-v2__top">
+      <div class="footer-v2__inner">
+        <div class="footer-v2__brand">
+          <a class="footer-v2__logo" data-page="home">
+            <img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/>
+          </a>
+          <p class="footer-v2__desc">NET7 is an AI-powered networking engine that capture contacts, identifies high-value connections, automate follow-up tasks, and tracks every interaction to closed deals.</p>
+        </div>
+        <div class="footer-v2__col">
+          <h4 class="footer-v2__col-heading" onclick="toggleFooterCol(this)">About NET7</h4>
+          <div class="footer-v2__col-body">
+            <div class="footer-v2__col-body-inner">
+              <a class="footer-v2__link" data-page="features">Features</a>
+              <a class="footer-v2__link" data-page="pricing">Pricing</a>
+              <a class="footer-v2__link" data-page="faq-page">FAQ</a>
+              <a class="footer-v2__link" data-page="about">Contact Us</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-v2__col">
+          <h4 class="footer-v2__col-heading" onclick="toggleFooterCol(this)">Contact Us</h4>
+          <div class="footer-v2__col-body">
+            <div class="footer-v2__col-body-inner">
+              <div class="footer-v2__contact-row"><span class="footer-v2__contact-label">Email:</span><span class="footer-v2__contact-val">hello@net7.com</span></div>
+              <div class="footer-v2__contact-row"><span class="footer-v2__contact-label">Sales Call:</span><span class="footer-v2__contact-val">+60 03 2709 7754</span></div>
+              <p class="footer-v2__address" style="margin-top:8px">Level 11, Hextar Tower Empire City, Jalan PJU 8, Damansara Perdana, 47820 Petaling Jaya, Selangor</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-v2__bottom">
+      <p class="footer-v2__copy">Copyright &copy; 2026 Net7. All rights reserved.</p>
+      <div class="footer-v2__legal">
+        <a class="footer-v2__legal-link" data-page="terms">Sitemap</a>
+        <a class="footer-v2__legal-link" data-page="terms">Terms of Service</a>
+        <a class="footer-v2__legal-link" data-page="privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<div id="page-features" class="page">
+
+  <section class="explore-v2">
+    <div class="explore-v2__inner">
+      <h1 class="explore-v2__heading">Explore Net7</h1>
+      <div class="explore-v2__body">
+        <div class="explore-v2__accordion">
+          <div class="acc-item">
+            <button class="acc-item__q"><span class="acc-item__title">AI Insights</span><span class="acc-item__icon"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></button>
+            <div class="acc-item__body"><p class="acc-item__desc">Collaborate with team members to create and track the end to end progress of every task. Enjoy scheduling reminders, chronological tracking, owner assignment, and more, for effective execution of tasks.</p></div>
+          </div>
+          <div class="acc-item open">
+            <button class="acc-item__q"><span class="acc-item__title">Task Management &amp; Execution</span><span class="acc-item__icon"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></button>
+            <div class="acc-item__body"><p class="acc-item__desc">Collaborate with team members to create and track the end to end progress of every task. Enjoy scheduling reminders, chronological tracking, owner assignment, and more, for effective execution of tasks.</p></div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-item__q"><span class="acc-item__title">Card Scanning Capabilities</span><span class="acc-item__icon"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></button>
+            <div class="acc-item__body"><p class="acc-item__desc">Enjoy instant business card scanning in seconds via OCR-powered capabilities. Capture information online/offline along with geotagging and in 7 languages. You can also share your profile via QR code, thanks to Apple Wallet compatibility.</p></div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-item__q"><span class="acc-item__title">Network Dashboard</span><span class="acc-item__icon"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></button>
+            <div class="acc-item__body"><p class="acc-item__desc">Sort and categorise every contact by industries, companies, and decision-makers. Optimise network growth over time, and identify where its strongest potential for further growth lies.</p></div>
+          </div>
+        </div>
+        <div class="explore-v2__image" id="exploreImage">
+          <img src="assets/images/features-hero.svg" alt="Net7 App Features" id="exploreImg"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-dash-v2">
+    <div class="admin-dash-v2__inner">
+      <div class="admin-dash-v2__text js-reveal">
+        <h2 class="admin-dash-v2__heading">Admin Dashboard</h2>
+        <div class="admin-dash-v2__features">
+          <div class="admin-feat"><div class="admin-feat__icon"><svg width="24" height="24" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div><div><p class="admin-feat__title">Real-Time Team Activity Dashboard</p><p class="admin-feat__desc">Get instant visibility into team performance and pipeline progress so you can act faster and close more deals.</p></div></div>
+          <div class="admin-feat"><div class="admin-feat__icon"><svg width="24" height="24" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><div><p class="admin-feat__title">Contact Ownership &amp; Reassignment</p><p class="admin-feat__desc">Keep relationships intact when employees leave by seamlessly transferring contacts with no loss in continuity.</p></div></div>
+          <div class="admin-feat"><div class="admin-feat__icon"><svg width="24" height="24" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><div><p class="admin-feat__title">Role-Based Access Control</p><p class="admin-feat__desc">Protect sensitive relationships while giving the right people the right level of visibility across your team.</p></div></div>
+          <div class="admin-feat"><div class="admin-feat__icon"><svg width="24" height="24" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div><div><p class="admin-feat__title">Follow-Up Task Automation</p><p class="admin-feat__desc">Never miss an opportunity with automatic reminders and task assignments that keep deals moving forward.</p></div></div>
+        </div>
+      </div>
+      <div class="admin-dash-v2__image">
+        <img src="assets/images/admin-dashboard.svg" alt="Admin Dashboard" id="adminDashImg"/>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer-v2">
+    <div class="footer-v2__top">
+      <div class="footer-v2__inner">
+        <div class="footer-v2__brand">
+          <a class="footer-v2__logo" data-page="home">
+            <img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/>
+          </a>
+          <p class="footer-v2__desc">NET7 is an AI-powered networking engine that capture contacts, identifies high-value connections, automate follow-up tasks, and tracks every interaction to closed deals.</p>
+        </div>
+        <div class="footer-v2__col">
+          <h4 class="footer-v2__col-heading" onclick="toggleFooterCol(this)">About NET7</h4>
+          <div class="footer-v2__col-body">
+            <div class="footer-v2__col-body-inner">
+              <a class="footer-v2__link" data-page="features">Features</a>
+              <a class="footer-v2__link" data-page="pricing">Pricing</a>
+              <a class="footer-v2__link" data-page="faq-page">FAQ</a>
+              <a class="footer-v2__link" data-page="about">Contact Us</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-v2__col">
+          <h4 class="footer-v2__col-heading" onclick="toggleFooterCol(this)">Contact Us</h4>
+          <div class="footer-v2__col-body">
+            <div class="footer-v2__col-body-inner">
+              <div class="footer-v2__contact-row"><span class="footer-v2__contact-label">Email:</span><span class="footer-v2__contact-val">hello@net7.com</span></div>
+              <div class="footer-v2__contact-row"><span class="footer-v2__contact-label">Sales Call:</span><span class="footer-v2__contact-val">+60 03 2709 7754</span></div>
+              <p class="footer-v2__address" style="margin-top:8px">Level 11, Hextar Tower Empire City, Jalan PJU 8, Damansara Perdana, 47820 Petaling Jaya, Selangor</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-v2__bottom">
+      <p class="footer-v2__copy">Copyright &copy; 2026 Net7. All rights reserved.</p>
+      <div class="footer-v2__legal">
+        <a class="footer-v2__legal-link" data-page="terms">Sitemap</a>
+        <a class="footer-v2__legal-link" data-page="terms">Terms of Service</a>
+        <a class="footer-v2__legal-link" data-page="privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<div id="page-pricing" class="page">
+
+  <section class="pricing-v2">
+    <div class="pricing-v2__inner">
+      <h1 class="pricing-v2__heading">Pricing Plans</h1>
+      <div class="pricing-v2__grid">
+        <div class="pcard-v2">
+          <div class="pcard-v2__top pcard-v2__top--dark">
+            <span class="pcard-v2__badge">Free Trial</span>
+            <p class="pcard-v2__tag">Full Access.<br>No Payment Required.</p>
+            <div class="pcard-v2__price-wrap"><p class="pcard-v2__price">FREE</p><p class="pcard-v2__price-period">for 1 month</p></div>
+            <button class="pcard-v2__cta pcard-v2__cta--blue" onclick="showPage('about')">Get FREE Trial Now</button>
+          </div>
+          <div class="pcard-v2__features">
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Free Trial includes the full Enterprise feature set.</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Trial duration is limited to 1 month from activation date.</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>After the 1-month period, continued access requires an Enterprise subscription.</div>
+          </div>
+        </div>
+        <div class="pcard-v2 pcard-v2--enterprise">
+          <div class="pcard-v2__top pcard-v2__top--blue">
+            <span class="pcard-v2__badge pcard-v2__badge--black">Enterprise</span>
+            <p class="pcard-v2__tag">For Teams Ready To Scale Relationship Intelligence.</p>
+            <div class="pcard-v2__price-wrap"><p class="pcard-v2__price">RM199</p><p class="pcard-v2__price-period">Per User, Billed Annually</p></div>
+            <button class="pcard-v2__cta pcard-v2__cta--dark" onclick="showPage('about')">Sign Up Now</button>
+          </div>
+          <div class="pcard-v2__features">
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Capture &amp; Digitise</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Contact Intelligence &amp; Enrichment</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Network &amp; Expansion</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Task Management &amp; Execution</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Organisation Control &amp; Governance</div>
+          </div>
+        </div>
+        <div class="pcard-v2">
+          <div class="pcard-v2__top pcard-v2__top--dark2">
+            <span class="pcard-v2__badge">Enterprise+ (Custom)</span>
+            <p class="pcard-v2__tag">Tailored For Large Organisations With Advanced Needs.</p>
+            <div class="pcard-v2__price-wrap"><p class="pcard-v2__price-contact">Contact<br>NET7 Sales</p></div>
+            <button class="pcard-v2__cta pcard-v2__cta--blue" onclick="showPage('about')">Contact Now</button>
+          </div>
+          <div class="pcard-v2__features">
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Up to unlimited users with volume pricing</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Dedicated Customer Success Manager</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Private expert webinars and office hours</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>API access for custom integrations</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Advanced analytics and custom reporting</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Priority support SLA</div>
+            <div class="pcard-v2__feat"><span class="pcard-v2__feat-check"><svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>Custom onboarding and team training</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-banner-v2-wrap">
+    <div class="cta-banner-v2">
+      <div class="cta-banner-v2__bg">
+        <img src="assets/images/cta-banner-team.png" alt="Professional at laptop" id="pricingCtaImg"/>
+      </div>
+      <div class="cta-banner-v2__overlay"></div>
+      <div class="cta-banner-v2__text js-reveal">
+        <h2 class="cta-banner-v2__heading">Outpace Your Competition With Our AI Networking Platform Today!</h2>
+        <div><button class="btn-pill-dark" onclick="showPage('about')">Get Started for Free</button></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer-v2">
+    <div class="footer-v2__top">
+      <div class="footer-v2__inner">
+        <div class="footer-v2__brand">
+          <a class="footer-v2__logo" data-page="home">
+            <img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/>
+          </a>
+          <p class="footer-v2__desc">NET7 is an AI-powered networking engine that capture contacts, identifies high-value connections, automate follow-up tasks, and tracks every interaction to closed deals.</p>
+        </div>
+        <div class="footer-v2__col">
+          <h4 class="footer-v2__col-heading" onclick="toggleFooterCol(this)">About NET7</h4>
+          <div class="footer-v2__col-body">
+            <div class="footer-v2__col-body-inner">
+              <a class="footer-v2__link" data-page="features">Features</a>
+              <a class="footer-v2__link" data-page="pricing">Pricing</a>
+              <a class="footer-v2__link" data-page="faq-page">FAQ</a>
+              <a class="footer-v2__link" data-page="about">Contact Us</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-v2__col">
+          <h4 class="footer-v2__col-heading" onclick="toggleFooterCol(this)">Contact Us</h4>
+          <div class="footer-v2__col-body">
+            <div class="footer-v2__col-body-inner">
+              <div class="footer-v2__contact-row"><span class="footer-v2__contact-label">Email:</span><span class="footer-v2__contact-val">hello@net7.com</span></div>
+              <div class="footer-v2__contact-row"><span class="footer-v2__contact-label">Sales Call:</span><span class="footer-v2__contact-val">+60 03 2709 7754</span></div>
+              <p class="footer-v2__address" style="margin-top:8px">Level 11, Hextar Tower Empire City, Jalan PJU 8, Damansara Perdana, 47820 Petaling Jaya, Selangor</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-v2__bottom">
+      <p class="footer-v2__copy">Copyright &copy; 2026 Net7. All rights reserved.</p>
+      <div class="footer-v2__legal">
+        <a class="footer-v2__legal-link" data-page="terms">Sitemap</a>
+        <a class="footer-v2__legal-link" data-page="terms">Terms of Service</a>
+        <a class="footer-v2__legal-link" data-page="privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<div id="page-faq-page" class="page">
+
+  <!-- Hero -->
+  <section class="faqp-hero">
+    <div class="faqp-hero__inner">
+      <h1 class="faqp-hero__heading">How can we help you?</h1>
+      <p class="faqp-hero__sub">Browse topics or search for answers below.</p>
+    </div>
+  </section>
+
+  <!-- Recommended Articles -->
+  <section class="faqp-recommended">
+    <div class="faqp-inner">
+      <h2 class="faqp-section-heading">Recommended articles</h2>
+      <div class="faqp-recommended__grid" id="faqRecommended">
+        <!-- Populated from faqData -->
+      </div>
+    </div>
+  </section>
+
+  <!-- All Topics -->
+  <section class="faqp-topics">
+    <div class="faqp-inner">
+      <h2 class="faqp-section-heading">All topics</h2>
+      <div class="faqp-topics__grid" id="faqTopicsGrid">
+        <!-- Populated from faqData -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Topic Detail (shown when a topic card is clicked) -->
+  <section class="faqp-detail" id="faqDetail" style="display:none">
+    <div class="faqp-inner">
+      <button class="faqp-back" onclick="showFaqTopics()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        All topics
+      </button>
+      <div class="faqp-detail__header">
+        <div class="faqp-detail__icon" id="faqDetailIcon"></div>
+        <div>
+          <h2 class="faqp-detail__title" id="faqDetailTitle"></h2>
+          <p class="faqp-detail__count" id="faqDetailCount"></p>
+        </div>
+      </div>
+      <div class="faq-list faqp-detail__list" id="faqDetailList">
+        <!-- Q&A accordion items populated from faqData -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="h2-footer">
+    <div class="h2-footer__top">
+      <div class="h2-footer__inner">
+        <div class="h2-footer__brand">
+          <a class="h2-footer__logo" data-page="home"><img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/></a>
+          <div class="h2-footer__newsletter">
+            <p class="h2-footer__newsletter-label">Subscribe to our newsletter</p>
+            <div class="h2-footer__newsletter-row">
+              <input type="email" placeholder="Your email" class="h2-footer__newsletter-input"/>
+              <button class="btn h2-btn-primary h2-footer__newsletter-btn">Subscribe</button>
+            </div>
+          </div>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">About Net7</h4>
+          <a class="h2-footer__link" data-page="features">Features</a>
+          <a class="h2-footer__link" data-page="pricing">Pricing</a>
+          <a class="h2-footer__link" data-page="resources">Resources</a>
+          <a class="h2-footer__link" data-page="faq-page">FAQ</a>
+          <a class="h2-footer__link" data-page="about">Contact Us</a>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Contact Us</h4>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Email:</span><a href="mailto:hello@net7.com" class="h2-footer__contact-link">hello@net7.com</a></p>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Sales Call:</span><a href="tel:+60327097754" class="h2-footer__contact-link">+60 03 2709 7754</a></p>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Company Address</h4>
+          <p class="h2-footer__address">Level 9, Menara Hextar Tower Empire City, Jalan PJU 8, Damansara Perdana, 47820 Petaling Jaya, Selangor</p>
+        </div>
+      </div>
+    </div>
+    <div class="h2-footer__bottom">
+      <p class="h2-footer__copy">Copyright &copy; 2025 Net7. All rights reserved.</p>
+      <div class="h2-footer__legal">
+        <a class="h2-footer__legal-link" data-page="terms">Sitemap</a>
+        <a class="h2-footer__legal-link" data-page="terms">Terms of Service</a>
+        <a class="h2-footer__legal-link" data-page="privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<div id="page-about" class="page">
+
+  <!-- Hero with dual phones + text -->
+  <section class="about-hero">
+    <div class="about-hero__bg">
+      <img src="assets/images/about-hero-bg.svg" alt="" class="about-hero__bg-img"/>
+      <div class="about-hero__overlay"></div>
+    </div>
+    <div class="about-hero__content">
+      <div class="about-hero__phones" aria-hidden="true">
+        <div class="about-phone about-phone--back"></div>
+        <div class="about-phone about-phone--front"></div>
+      </div>
+      <div class="about-hero__text">
+        <p class="about-hero__label">
+          <svg width="14" height="14" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#2D7EF6"/><circle cx="14" cy="14" r="5" fill="white" opacity="0.9"/></svg>
+          About Us
+        </p>
+        <h1 class="about-hero__heading">ABOUT NET7</h1>
+        <ul class="about-hero__points">
+          <li><span class="about-hero__num">01</span>Net7 sits at the intersection of contact management, CRM, and professional networking.</li>
+          <li><span class="about-hero__num">02</span>Instead of storing data, we focus on activating it.</li>
+          <li><span class="about-hero__num">03</span>We believe every company already has the network they need. They just don't have visibility or structure to use it.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT with Map -->
+  <section class="contact-section">
+    <div class="contact-section__inner">
+      <div class="contact-section__map">
+        <!-- Click-to-load map: avoids file:// security warning -->
+        <div class="map-poster" id="mapPoster" onclick="loadMap(this)"
+          data-src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3983.7899744520897!2d101.6200!3d3.1478!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cc4977b8c0c1b5%3A0x3af7a0fc2aa85af!2sMenara%20Hextar!5e0!3m2!1sen!2smy!4v1680000000000">
+          <img
+            src="https://maps.googleapis.com/maps/api/staticmap?center=Menara+Hextar,Petaling+Jaya&zoom=15&size=600x500&maptype=roadmap&markers=color:blue%7C3.1478,101.6200&style=feature:all|saturation:-20"
+            onerror="this.style.display='none'"
+            alt="Net7 Office Location"
+            class="map-poster__img"
+          />
+          <div class="map-poster__overlay">
+            <div class="map-poster__pin">
+              <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#2D7EF6"/>
+                <circle cx="12" cy="9" r="2.5" fill="white"/>
+              </svg>
+            </div>
+            <div class="map-poster__info">
+              <p class="map-poster__title">Net7 HQ</p>
+              <p class="map-poster__addr">Menara Hextar, Petaling Jaya</p>
+              <span class="map-poster__cta">Click to open map</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="contact-section__form-wrap">
+        <p class="contact-section__label">
+          <svg width="14" height="14" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#2D7EF6"/><circle cx="14" cy="14" r="5" fill="white" opacity="0.9"/></svg>
+          Contact Us
+        </p>
+        <h2 class="contact-section__heading">Ready to Connect and Grow!</h2>
+        <p class="contact-section__sub">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+        <form class="contact-form" id="form-about" onsubmit="validateAndSubmit(event,this)">
+            <div class="form-success"><span class="form-success__icon">✓</span><span>Thank you! We'll be in touch within 24 hours.</span></div>
+                      <div class="contact-form__row">
+            <div class="contact-form__field">
+              <label for="about-fname">First Name *</label>
+              <input id="about-fname" type="text" placeholder="Your first name" data-validate="name" data-label="First Name" autocomplete="given-name"/>
+              <span class="field-error"></span>
+            </div>
+            <div class="contact-form__field">
+              <label for="about-lname">Last Name *</label>
+              <input id="about-lname" type="text" placeholder="Your last name" data-validate="required" data-label="Last Name" autocomplete="family-name"/>
+              <span class="field-error"></span>
+            </div>
+          </div>
+          <div class="contact-form__field"><label>Company Name *</label><input type="text" placeholder="Your company name" data-validate="required" data-label="Company Name" autocomplete="organization"/><span class="field-error"></span></div>
+          <div class="contact-form__field"><label>Email *</label><input type="email" placeholder="you@company.com" data-validate="email" data-label="Email" autocomplete="email"/><span class="field-error"></span></div>
+          <div class="contact-form__field"><label>Message *</label><textarea placeholder="How can we help you?" data-validate="required" data-label="Message" rows="3"></textarea><span class="field-error"></span></div>
+          <button type="submit" class="btn btn-primary btn-full">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="h2-footer">
+    <div class="h2-footer__top">
+      <div class="h2-footer__inner">
+        <div class="h2-footer__brand">
+          <a class="h2-footer__logo" data-page="home">
+            <img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/>
+          </a>
+          <div class="h2-footer__newsletter">
+            <p class="h2-footer__newsletter-label">Subscribe to our newsletter</p>
+            <div class="h2-footer__newsletter-row">
+              <input type="email" placeholder="Your email" class="h2-footer__newsletter-input"/>
+              <button class="btn h2-btn-primary h2-footer__newsletter-btn">Subscribe</button>
+            </div>
+          </div>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">About Net7</h4>
+          <a class="h2-footer__link" data-page="features">Features</a>
+          <a class="h2-footer__link" data-page="pricing">Pricing</a>
+          <a class="h2-footer__link" data-page="resources">Resources</a>
+          <a class="h2-footer__link" data-page="home">FAQ</a>
+          <a class="h2-footer__link" data-page="about">Careers</a>
+          <a class="h2-footer__link" data-page="about">Contact Us</a>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Contact Us</h4>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Email:</span><a href="mailto:hello@net7.com" class="h2-footer__contact-link">hello@net7.com</a></p>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Sales Call:</span><a href="tel:+60327097754" class="h2-footer__contact-link">+60 03 2709 7754</a></p>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Company Address</h4>
+          <p class="h2-footer__address">Level 9, Menara Hextar Tower Empire City, Jalan PJU 8, Damansara Perdana, 47820 Petaling Jaya, Selangor</p>
+        </div>
+      </div>
+    </div>
+    <div class="h2-footer__bottom">
+      <p class="h2-footer__copy">Copyright &copy; 2025 Net7. All rights reserved.</p>
+      <div class="h2-footer__legal">
+        <a class="h2-footer__legal-link" data-page="terms">Sitemap</a>
+        <a class="h2-footer__legal-link" data-page="terms">Terms of Service</a>
+        <a class="h2-footer__legal-link" data-page="privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<div id="page-terms" class="page">
+  <section class="legal-page">
+    <div class="legal-page__inner">
+
+      <!-- Sidebar -->
+      <aside class="legal-sidebar">
+        <p class="legal-sidebar__label">Bullet point:</p>
+        <nav class="legal-sidebar__nav">
+          <a href="#tos-1" class="legal-sidebar__link active">Terms of Services Topic 1</a>
+          <a href="#tos-2" class="legal-sidebar__link">Terms of Services Topic 2</a>
+          <a href="#tos-3" class="legal-sidebar__link">Terms of Services Topic 3</a>
+          <a href="#tos-4" class="legal-sidebar__link">Terms of Services Topic 4</a>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <article class="legal-content">
+        <h1 class="legal-page__title">Terms of Services</h1>
+        <p class="legal-page__intro">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts and Consonantia, there live the blind texts.</p>
+        <p class="legal-page__updated">Latest Updated: 6th April, 2026</p>
+
+        <section id="tos-1" class="legal-section">
+          <h2 class="legal-section__title">Terms of Services Topic 1</h2>
+          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, these live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth. Even the all-powerful Pointing has no control about the blind texts it is an almost unorthographic life One day however a small line of blind text by the name of Lorem Ipsum decided to leave for the far World of Grammar.</p>
+          <p class="legal-section__sub">Far far away, behind the word local area:</p>
+          <ul class="legal-list">
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+          </ul>
+        </section>
+
+        <section id="tos-2" class="legal-section">
+          <h2 class="legal-section__title">Terms of Services Topic 2</h2>
+          <p class="legal-section__sub">Far far, behind the word local area:</p>
+          <ul class="legal-list">
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+          </ul>
+        </section>
+
+        <section id="tos-3" class="legal-section">
+          <h2 class="legal-section__title">Terms of Services Topic 3</h2>
+          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, these live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by their place and supplies it with the necessary regelialia.</p>
+          <p class="legal-section__sub">Terms of Service:</p>
+          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, these live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+          <p class="legal-section__sub">Far far, behind the word mountains:</p>
+          <ul class="legal-list">
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+          </ul>
+          <!-- Image in section 3 -->
+          <div class="legal-img-wrap">
+            <img src="assets/images/terms-office-team.svg" alt="Office team"/>
+          </div>
+        </section>
+
+        <section id="tos-4" class="legal-section">
+          <h2 class="legal-section__title">Terms of Services Topic 4</h2>
+          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, these live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth. Even the all-powerful Pointing has no control about the blind texts it is an almost unorthographic life. One day however a small line of blind text by the name of Lorem Ipsum decided to leave for the far World of Grammar. The Big Oxmox advised her not to do so.</p>
+          <p class="legal-section__sub">Far far, behind the word mountains:</p>
+          <ul class="legal-list">
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+          </ul>
+          <!-- Image in section 4 -->
+          <div class="legal-img-wrap">
+            <img src="assets/images/terms-team-collab.svg" alt="Team collaboration"/>
+          </div>
+        </section>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="h2-footer">
+    <div class="h2-footer__top">
+      <div class="h2-footer__inner">
+        <div class="h2-footer__brand">
+          <a class="h2-footer__logo" data-page="home">
+            <img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/>
+          </a>
+          <div class="h2-footer__newsletter">
+            <p class="h2-footer__newsletter-label">Subscribe to our newsletter</p>
+            <div class="h2-footer__newsletter-row">
+              <input type="email" placeholder="Your email" class="h2-footer__newsletter-input"/>
+              <button class="btn h2-btn-primary h2-footer__newsletter-btn">Subscribe</button>
+            </div>
+          </div>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">About Net7</h4>
+          <a class="h2-footer__link" data-page="features">Features</a>
+          <a class="h2-footer__link" data-page="pricing">Pricing</a>
+          <a class="h2-footer__link" data-page="resources">Resources</a>
+          <a class="h2-footer__link" data-page="home">FAQ</a>
+          <a class="h2-footer__link" data-page="about">Careers</a>
+          <a class="h2-footer__link" data-page="about">Contact Us</a>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Contact Us</h4>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Email:</span><a href="mailto:hello@net7.com" class="h2-footer__contact-link">hello@net7.com</a></p>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Sales Call:</span><a href="tel:+60327097754" class="h2-footer__contact-link">+60 03 2709 7754</a></p>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Company Address</h4>
+          <p class="h2-footer__address">Level 9, Menara Hextar Tower Empire City, Jalan PJU 8, Damansara Perdana, 47820 Petaling Jaya, Selangor</p>
+        </div>
+      </div>
+    </div>
+    <div class="h2-footer__bottom">
+      <p class="h2-footer__copy">Copyright &copy; 2025 Net7. All rights reserved.</p>
+      <div class="h2-footer__legal">
+        <a class="h2-footer__legal-link" data-page="terms">Sitemap</a>
+        <a class="h2-footer__legal-link" data-page="terms">Terms of Service</a>
+        <a class="h2-footer__legal-link" data-page="privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<div id="page-privacy" class="page">
+  <section class="legal-page">
+    <div class="legal-page__inner">
+
+      <!-- Sidebar -->
+      <aside class="legal-sidebar">
+        <p class="legal-sidebar__label">Bullet point:</p>
+        <nav class="legal-sidebar__nav">
+          <a href="#pp-1" class="legal-sidebar__link active">Privacy Policy topic 1</a>
+          <a href="#pp-2" class="legal-sidebar__link">Privacy Policy Topic 2</a>
+          <a href="#pp-3" class="legal-sidebar__link">Privacy Policy Topic 3</a>
+          <a href="#pp-4" class="legal-sidebar__link">Privacy Policy Topic 4</a>
+        </nav>
+      </aside>
+
+      <!-- Content -->
+      <article class="legal-content">
+        <h1 class="legal-page__title">Privacy Policy</h1>
+        <p class="legal-page__intro">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts and Consonantia, there live the blind texts.</p>
+        <p class="legal-page__updated">Latest Updated: 6th April, 2026</p>
+
+        <section id="pp-1" class="legal-section">
+          <h2 class="legal-section__title">Privacy Policy topic 1</h2>
+          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, these live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth. Even the all-powerful Pointing has no control about the blind texts it is an almost unorthographic life One day however a small line of blind text by the name of Lorem Ipsum decided to leave for the far World of Grammar.</p>
+          <p class="legal-section__sub">Far far away, left the word mountains:</p>
+          <ul class="legal-list">
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+          </ul>
+        </section>
+
+        <section id="pp-2" class="legal-section">
+          <h2 class="legal-section__title">Privacy Policy Topic 2</h2>
+          <p class="legal-section__sub">Far far away, behind the word mountains:</p>
+          <ul class="legal-list">
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+          </ul>
+        </section>
+
+        <section id="pp-3" class="legal-section">
+          <h2 class="legal-section__title">Privacy Policy Topic 3</h2>
+          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, these live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth.</p>
+          <p class="legal-section__sub">Far far away, behind the word mountains:</p>
+          <ul class="legal-list">
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+            <li>Far far away, behind the word mountains</li>
+          </ul>
+        </section>
+
+        <section id="pp-4" class="legal-section">
+          <h2 class="legal-section__title">Privacy Policy Topic 4</h2>
+          <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, these live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean. A small river named Duden flows by their place and supplies it with the necessary regelialia. It is a paradisematic country, in which roasted parts of sentences fly into your mouth. Even the all-powerful Pointing has no control about the blind texts it is an almost unorthographic life. One day however a small line of blind text by the name of Lorem Ipsum decided to leave for the far World of Grammar.</p>
+        </section>
+      </article>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="h2-footer">
+    <div class="h2-footer__top">
+      <div class="h2-footer__inner">
+        <div class="h2-footer__brand">
+          <a class="h2-footer__logo" data-page="home">
+            <img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/>
+          </a>
+          <div class="h2-footer__newsletter">
+            <p class="h2-footer__newsletter-label">Subscribe to our newsletter</p>
+            <div class="h2-footer__newsletter-row">
+              <input type="email" placeholder="Your email" class="h2-footer__newsletter-input"/>
+              <button class="btn h2-btn-primary h2-footer__newsletter-btn">Subscribe</button>
+            </div>
+          </div>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">About Net7</h4>
+          <a class="h2-footer__link" data-page="features">Features</a>
+          <a class="h2-footer__link" data-page="pricing">Pricing</a>
+          <a class="h2-footer__link" data-page="resources">Resources</a>
+          <a class="h2-footer__link" data-page="home">FAQ</a>
+          <a class="h2-footer__link" data-page="about">Careers</a>
+          <a class="h2-footer__link" data-page="about">Contact Us</a>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Contact Us</h4>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Email:</span><a href="mailto:hello@net7.com" class="h2-footer__contact-link">hello@net7.com</a></p>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Sales Call:</span><a href="tel:+60327097754" class="h2-footer__contact-link">+60 03 2709 7754</a></p>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Company Address</h4>
+          <p class="h2-footer__address">Level 9, Menara Hextar Tower Empire City, Jalan PJU 8, Damansara Perdana, 47820 Petaling Jaya, Selangor</p>
+        </div>
+      </div>
+    </div>
+    <div class="h2-footer__bottom">
+      <p class="h2-footer__copy">Copyright &copy; 2025 Net7. All rights reserved.</p>
+      <div class="h2-footer__legal">
+        <a class="h2-footer__legal-link" data-page="terms">Sitemap</a>
+        <a class="h2-footer__legal-link" data-page="terms">Terms of Service</a>
+        <a class="h2-footer__legal-link" data-page="privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<div id="page-resources" class="page">
+
+  <!-- Feature Cards -->
+  <section class="res-page">
+    <div class="page-pill">
+      <svg class="section-label-icon" width="16" height="16" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#2D7EF6"/><circle cx="14" cy="14" r="5" fill="white" opacity="0.9"/></svg>
+      How to Use Net7
+    </div>
+    <h1 class="res-heading">Learn How To Use Net7</h1>
+    <p class="res-sub">Step-by-step walkthroughs to get started quickly</p>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-icon"><svg width="22" height="22" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v5c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 10v5c0 1.66 4.03 3 9 3s9-1.34 9-3v-5"/></svg></div><h3 class="feat-title">Capture Leads In Seconds</h3><p class="feat-desc">Scan multiple cards at once, contacts saved instantly.</p></div>
+      <div class="feat-card"><div class="feat-icon"><svg width="22" height="22" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></div><h3 class="feat-title">Never Waste A Trip</h3><p class="feat-desc">Discover nearby contacts and seize every travel opportunity.</p></div>
+      <div class="feat-card"><div class="feat-icon"><svg width="22" height="22" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div><h3 class="feat-title">Smart Classify &amp; Tag</h3><p class="feat-desc">Instant industry-role sorting with context-saving keywords.</p></div>
+      <div class="feat-card"><div class="feat-icon"><svg width="22" height="22" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><h3 class="feat-title">Team-Up To Win</h3><p class="feat-desc">Team up gather target prospects faster.</p></div>
+      <div class="feat-card"><div class="feat-icon"><svg width="22" height="22" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21h6M12 3a6 6 0 016 6c0 2.22-1.2 4.16-3 5.2V17H9v-2.8A6 6 0 016 9a6 6 0 016-6z"/></svg></div><h3 class="feat-title">Conversation-Starter Insights</h3><p class="feat-desc">View timely insights to spark engaging conversations.</p></div>
+      <div class="feat-card"><div class="feat-icon"><svg width="22" height="22" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><h3 class="feat-title">Green, Smart, Memorable</h3><p class="feat-desc">Share dynamic QR card no printing, always updated.</p></div>
+      <div class="feat-card"><div class="feat-icon"><svg width="22" height="22" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3 class="feat-title">Private By Choice</h3><p class="feat-desc">Cards stay private – share only when you decide.</p></div>
+      <div class="feat-card"><div class="feat-icon"><svg width="22" height="22" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg></div><h3 class="feat-title">Cloud Sync &amp; Backup</h3><p class="feat-desc">Contacts auto-sync across devices with secure cloud backup.</p></div>
+    </div>
+  </section>
+
+  <!-- Guide Video -->
+  <section class="res-guide">
+    <div class="res-guide__inner">
+      <div class="res-guide__text js-reveal">
+        <p class="page-pill">
+          <svg class="section-label-icon" width="16" height="16" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#2D7EF6"/><circle cx="14" cy="14" r="5" fill="white" opacity="0.9"/></svg>
+          Guide – Step by Step
+        </p>
+        <h2 class="res-guide__heading">Watch how Net7 works in minutes</h2>
+        <p class="res-guide__sub">Follow along with our step-by-step walkthrough and start building your network in under 10 minutes.</p>
+        <ul class="res-guide__steps">
+          <li><span class="res-guide__step-num">01</span>Create your profile and import contacts</li>
+          <li><span class="res-guide__step-num">02</span>Scan business cards or sync via QR / NFC</li>
+          <li><span class="res-guide__step-num">03</span>Explore relationship insights and pipeline</li>
+          <li><span class="res-guide__step-num">04</span>Activate warm introductions and follow-ups</li>
+        </ul>
+      </div>
+      <div class="res-guide__video js-reveal" style="--delay:.15s">
+        <div class="res-guide__video-wrap">
+          <div class="yt-poster" id="ytPoster" data-videoid="eiBGWOIaM6k" onclick="loadYouTube(this)">
+            <img src="assets/images/youtube-thumbnail.svg" alt="Net7 Step-by-Step Guide – Click to play" class="yt-poster__thumb" onerror="this.src='assets/images/youtube-thumbnail-fallback.svg'"/>
+            <div class="yt-poster__overlay"></div>
+            <button class="yt-poster__btn" aria-label="Play video">
+              <svg class="yt-poster__btn-bg" viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M66.5 7.8C65.7 4.8 63.3 2.4 60.3 1.6 55 0 34 0 34 0S13 0 7.7 1.5C4.8 2.3 2.3 4.8 1.5 7.8 0 13.1 0 24 0 24s0 11 1.5 16.2c.8 3 3.2 5.4 6.2 6.2C13 48 34 48 34 48s21 0 26.3-1.5c3-.8 5.4-3.2 6.2-6.2C68 35 68 24 68 24s0-11-1.5-16.2z" fill="#FF0000"/>
+                <path d="M45 24L27 14v20" fill="#fff"/>
+              </svg>
+            </button>
+            <div class="yt-poster__label">
+              <svg width="16" height="16" viewBox="0 0 68 48" fill="none"><path d="M66.5 7.8C65.7 4.8 63.3 2.4 60.3 1.6 55 0 34 0 34 0S13 0 7.7 1.5C4.8 2.3 2.3 4.8 1.5 7.8 0 13.1 0 24 0 24s0 11 1.5 16.2c.8 3 3.2 5.4 6.2 6.2C13 48 34 48 34 48s21 0 26.3-1.5c3-.8 5.4-3.2 6.2-6.2C68 35 68 24 68 24s0-11-1.5-16.2z" fill="#FF0000"/><path d="M45 24L27 14v20" fill="#fff"/></svg>
+              Click to play
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Cases -->
+  <section class="use-cases">
+    <div class="use-cases__inner">
+      <h2 class="use-cases__heading">Use Cases</h2>
+      <p class="use-cases__sub">Use Cases, how our technology set for the best</p>
+      <div class="uc-tabs" role="tablist">
+        <button class="uc-tab active" data-tab="all" role="tab" aria-selected="true">All</button>
+        <button class="uc-tab" data-tab="sales" role="tab" aria-selected="false">Sales Team</button>
+        <button class="uc-tab" data-tab="business" role="tab" aria-selected="false">Business Development</button>
+        <button class="uc-tab" data-tab="executive" role="tab" aria-selected="false">Executives</button>
+      </div>
+      <div class="uc-cards" id="ucCardsGrid">
+        <div class="uc-card" data-categories="sales business"><div class="uc-card__icon uc-card__icon--blue"><svg width="20" height="20" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><div class="uc-card__body"><div class="uc-card__tags"><span class="uc-card__chip uc-card__chip--sales">Sales Team</span><span class="uc-card__chip uc-card__chip--business">Business Dev.</span></div><h4 class="uc-card__title">Close deals faster by knowing who your team already knows</h4><p class="uc-card__desc">Net7 surfaces warm paths to key prospects across your entire team — so no opportunity is missed because of siloed relationships.</p></div><a href="#" class="uc-card__btn">Read more</a></div>
+        <div class="uc-card" data-categories="business"><div class="uc-card__icon uc-card__icon--purple"><svg width="20" height="20" fill="none" stroke="#8b5cf6" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><div class="uc-card__body"><div class="uc-card__tags"><span class="uc-card__chip uc-card__chip--business">Business Dev.</span></div><h4 class="uc-card__title">Build strategic partnerships through relationship mapping</h4><p class="uc-card__desc">Identify which team members have existing connections to target partners and get warm introductions instead of cold outreach.</p></div><a href="#" class="uc-card__btn">Read more</a></div>
+        <div class="uc-card" data-categories="sales executive"><div class="uc-card__icon uc-card__icon--green"><svg width="20" height="20" fill="none" stroke="#10b981" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="uc-card__body"><div class="uc-card__tags"><span class="uc-card__chip uc-card__chip--sales">Sales Team</span><span class="uc-card__chip uc-card__chip--executive">Executives</span></div><h4 class="uc-card__title">Turn every event and conference into measurable pipeline</h4><p class="uc-card__desc">Capture contacts on-site via QR or NFC, automatically assign to sales reps, and trigger personalised follow-up sequences the same day.</p></div><a href="#" class="uc-card__btn">Read more</a></div>
+        <div class="uc-card" data-categories="executive"><div class="uc-card__icon uc-card__icon--orange"><svg width="20" height="20" fill="none" stroke="#f59e0b" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div class="uc-card__body"><div class="uc-card__tags"><span class="uc-card__chip uc-card__chip--executive">Executives</span></div><h4 class="uc-card__title">Get a real-time view of your company's full relationship capital</h4><p class="uc-card__desc">See aggregated relationship strength across your entire organisation — who has the strongest ties to key accounts, investors, or partners.</p></div><a href="#" class="uc-card__btn">Read more</a></div>
+        <div class="uc-card" data-categories="sales"><div class="uc-card__icon uc-card__icon--blue"><svg width="20" height="20" fill="none" stroke="#2D7EF6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.63A2 2 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div><div class="uc-card__body"><div class="uc-card__tags"><span class="uc-card__chip uc-card__chip--sales">Sales Team</span></div><h4 class="uc-card__title">Automate follow-up reminders so no warm lead goes cold</h4><p class="uc-card__desc">Smart engagement tracking alerts your reps when a relationship goes quiet, triggering the right nudge at exactly the right time.</p></div><a href="#" class="uc-card__btn">Read more</a></div>
+        <div class="uc-card" data-categories="business executive"><div class="uc-card__icon uc-card__icon--purple"><svg width="20" height="20" fill="none" stroke="#8b5cf6" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div class="uc-card__body"><div class="uc-card__tags"><span class="uc-card__chip uc-card__chip--business">Business Dev.</span><span class="uc-card__chip uc-card__chip--executive">Executives</span></div><h4 class="uc-card__title">Enrich your network with AI-driven contact intelligence</h4><p class="uc-card__desc">Net7 fills in missing contact data, links people to companies, and highlights relationship history — giving leadership a richer view of every opportunity.</p></div><a href="#" class="uc-card__btn">Read more</a></div>
+      </div>
+      <div class="uc-empty" id="ucEmpty" style="display:none"><p>No use cases found for this category yet.</p></div>
+    </div>
+  </section>
+
+  <!-- Contact + Footer -->
+  <section class="contact-section">
+    <div class="contact-section__inner">
+      <div class="contact-section__image"><img src="assets/images/contact-team-meeting.svg" alt="Team meeting"/></div>
+      <div class="contact-section__form-wrap">
+        <p class="contact-section__label"><svg class="section-label-icon" width="14" height="14" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#2D7EF6"/><circle cx="14" cy="14" r="5" fill="white" opacity="0.9"/></svg>Contact Us</p>
+        <h2 class="contact-section__heading">Ready to Connect and Grow!</h2>
+        <p class="contact-section__sub">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts.</p>
+        <form class="contact-form" id="form-contact" onsubmit="validateAndSubmit(event,this)">
+            <div class="form-success"><span class="form-success__icon">✓</span><span>Thank you! We'll be in touch within 24 hours.</span></div>
+                      <div class="contact-form__row">
+            <div class="contact-form__field">
+              <label for="contact-fname">First Name *</label>
+              <input id="contact-fname" type="text" placeholder="Your first name" data-validate="name" data-label="First Name" autocomplete="given-name"/>
+              <span class="field-error"></span>
+            </div>
+            <div class="contact-form__field">
+              <label for="contact-lname">Last Name *</label>
+              <input id="contact-lname" type="text" placeholder="Your last name" data-validate="required" data-label="Last Name" autocomplete="family-name"/>
+              <span class="field-error"></span>
+            </div></div>
+          <div class="contact-form__field"><label>Company Name *</label><input type="text" placeholder="Your company name" data-validate="required" data-label="Company Name" autocomplete="organization"/><span class="field-error"></span></div>
+          <div class="contact-form__field"><label>Email *</label><input type="email" placeholder="you@company.com" data-validate="email" data-label="Email" autocomplete="email"/><span class="field-error"></span></div>
+          <div class="contact-form__field"><label>Message *</label><textarea placeholder="How can we help you?" data-validate="required" data-label="Message" rows="4"></textarea><span class="field-error"></span></div>
+          <button type="submit" class="btn btn-primary btn-full">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="h2-footer">
+    <div class="h2-footer__top">
+      <div class="h2-footer__inner">
+        <div class="h2-footer__brand">
+          <a class="h2-footer__logo" data-page="home">
+            <img src="assets/images/logo.png" alt="Net7 Logo" class="site-logo-svg"/>
+          </a>
+          <div class="h2-footer__newsletter">
+            <p class="h2-footer__newsletter-label">Subscribe to our newsletter</p>
+            <div class="h2-footer__newsletter-row">
+              <input type="email" placeholder="Your email" class="h2-footer__newsletter-input"/>
+              <button class="btn h2-btn-primary h2-footer__newsletter-btn">Subscribe</button>
+            </div>
+          </div>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">About Net7</h4>
+          <a class="h2-footer__link" data-page="features">Features</a>
+          <a class="h2-footer__link" data-page="pricing">Pricing</a>
+          <a class="h2-footer__link" data-page="resources">Resources</a>
+          <a class="h2-footer__link" data-page="home">FAQ</a>
+          <a class="h2-footer__link" data-page="about">Careers</a>
+          <a class="h2-footer__link" data-page="about">Contact Us</a>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Contact Us</h4>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Email:</span><a href="mailto:hello@net7.com" class="h2-footer__contact-link">hello@net7.com</a></p>
+          <p class="h2-footer__contact-row"><span class="h2-footer__contact-label">Sales Call:</span><a href="tel:+60327097754" class="h2-footer__contact-link">+60 03 2709 7754</a></p>
+        </div>
+        <div class="h2-footer__col">
+          <h4 class="h2-footer__col-heading">Company Address</h4>
+          <p class="h2-footer__address">Level 9, Menara Hextar Tower Empire City, Jalan PJU 8, Damansara Perdana, 47820 Petaling Jaya, Selangor</p>
+        </div>
+      </div>
+    </div>
+    <div class="h2-footer__bottom">
+      <p class="h2-footer__copy">Copyright &copy; 2025 Net7. All rights reserved.</p>
+      <div class="h2-footer__legal">
+        <a class="h2-footer__legal-link" data-page="terms">Sitemap</a>
+        <a class="h2-footer__legal-link" data-page="terms">Terms of Service</a>
+        <a class="h2-footer__legal-link" data-page="privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<div class="search-overlay" id="searchOverlay" aria-hidden="true">
+  <div class="search-overlay__backdrop" onclick="closeSearch()"></div>
+  <div class="search-modal" role="dialog" aria-label="Search">
+    <div class="search-modal__bar">
+      <svg class="search-modal__icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" class="search-modal__input" placeholder="Search pages, features, pricing&hellip;" autocomplete="off" oninput="runSearch(this.value)" onkeydown="searchKeyNav(event)" aria-label="Search"/>
+      <kbd class="search-modal__esc" onclick="closeSearch()">Esc</kbd>
+    </div>
+    <div class="search-modal__results" id="searchResults">
+      <p class="search-modal__hint">Start typing to search across all pages</p>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+  <script>
+    function toggleFooterCol(heading) {
+      if (window.innerWidth > 700) return;
+      const col = heading.closest('.footer-v2__col');
+      col.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>
