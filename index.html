@@ -2788,29 +2788,19 @@ function validateAndSubmit(e, form) {
   var origHTML = btn ? btn.innerHTML : '';
   if (btn) { btn.classList.add('btn-submitting'); btn.innerHTML = 'Sending…'; }
 
-  /* ── Submit directly to Airtable ── */
-  var AIRTABLE_TOKEN   = 'YOUR_AIRTABLE_TOKEN';
-  var AIRTABLE_BASE_ID = 'app5ZcErLCXmQoslo';
-  var AIRTABLE_TABLE   = 'Submissions';
-  var AIRTABLE_URL     = 'https://api.airtable.com/v0/' + AIRTABLE_BASE_ID + '/' + encodeURIComponent(AIRTABLE_TABLE);
-
-  var record = {
-    fields: {
-      'Full Name':             nameEl    ? nameEl.value.trim()    : '',
-      'Email':                 emailEl   ? emailEl.value.trim()   : '',
-      'Company':               companyEl ? companyEl.value.trim() : '',
-      'Tell Us What You Need': needEl    ? needEl.value           : '',
-      'Message':               msgEl     ? msgEl.value.trim()     : ''
-    }
-  };
-
-  fetch(AIRTABLE_URL, {
+/* ── Submit via Make.com webhook ── */
+  var MAKE_WEBHOOK = 'https://hook.us2.make.com/8y9w5jvgkx86hspil47efgp7z7udb4jy';
+  fetch(MAKE_WEBHOOK, {
     method:  'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': 'Bearer ' + AIRTABLE_TOKEN
-    },
-    body: JSON.stringify(record)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fullName:  nameEl    ? nameEl.value.trim()    : '',
+      email:     emailEl   ? emailEl.value.trim()   : '',
+      company:   companyEl ? companyEl.value.trim() : '',
+      need:      needEl    ? needEl.value           : '',
+      message:   msgEl     ? msgEl.value.trim()     : '',
+      submittedAt: new Date().toISOString()
+    })
   })
   .then(function(res) {
     if (!res.ok) { return res.json().then(function(e) { throw e; }); }
