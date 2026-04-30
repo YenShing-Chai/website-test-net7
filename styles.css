@@ -132,7 +132,7 @@ p    { line-height: 1.65; }
 .capture-v2__body { position: relative; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 32px rgba(0,0,0,.14); min-height: 480px; display: flex; flex-direction: row; align-items: stretch; }
 .capture-v2__bg { position: absolute; inset: 0; z-index: 0; background: center/cover no-repeat; }
 .capture-v2__overlay { position: absolute; inset: 0; z-index: 1; background: linear-gradient(to right, rgba(5,10,30,.82) 0%, rgba(5,10,30,.78) 40%, rgba(5,10,30,.20) 100%); }
-.capture-v2__promo { position: relative; z-index: 2; padding: 56px 48px; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; max-width: 45%; }
+.capture-v2__promo { position: relative; z-index: 2; padding: 56px 48px; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; max-width: 45%; }
 .capture-v2__promo-heading { font-size: clamp(20px, 2.5vw, 30px); font-weight: 800; color: #fff; line-height: 1.25; margin-bottom: 14px; }
 .capture-v2__promo-sub { font-size: 14px; color: rgba(255,255,255,.75); line-height: 1.65; }
 .capture-v2__form-wrap { position: relative; z-index: 2; background: #fff; border-radius: 12px; margin: 24px 24px 24px 0; padding: 36px 36px; width: 420px; flex-shrink: 0; box-shadow: 0 8px 40px rgba(0,0,0,.18); display: flex; flex-direction: column; justify-content: center; }

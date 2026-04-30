@@ -450,15 +450,6 @@
     { page:'pricing',  title:'Free Trial Plan',         desc:'Try Net7 free — no credit card required.',                        icon:'pricing'  },
     { page:'pricing',  title:'Enterprise Plan',         desc:'Full-featured plan for growing teams.',                           icon:'pricing'  },
     { page:'pricing',  title:'Enterprise+ Custom',      desc:'Custom plan for large organisations. Contact sales.',              icon:'pricing'  },
-    { page:'resources',title:'Resources',               desc:'Guides, walkthroughs and use cases for Net7.',                    icon:'resources'},
-    { page:'resources',title:'Capture Leads',           desc:'Scan multiple cards at once, contacts saved instantly.',           icon:'resources'},
-    { page:'resources',title:'Smart Classify & Tag',    desc:'Instant industry-role sorting with context-saving keywords.',     icon:'resources'},
-    { page:'resources',title:'Cloud Sync & Backup',     desc:'Contacts auto-sync across devices with secure cloud backup.',     icon:'resources'},
-    { page:'resources',title:'Video Guide',             desc:'Step-by-step walkthrough video — watch how Net7 works.',          icon:'resources'},
-    { page:'about',    title:'About Us',                desc:'Learn about Net7 — our mission, team and company.',               icon:'about'    },
-    { page:'about',    title:'Careers',                 desc:'Join the Net7 team.',                                             icon:'about'    },
-    { page:'terms',    title:'Terms of Service',        desc:'Net7 terms and conditions of use.',                               icon:'legal'    },
-    { page:'privacy',  title:'Privacy Policy',          desc:'How Net7 collects, stores and uses your data.',                   icon:'legal'    },
   ];
 
   var ICON_SVG = {
@@ -799,34 +790,49 @@ function validateAndSubmit(e, form) {
   var origHTML = btn ? btn.innerHTML : '';
   if (btn) { btn.classList.add('btn-submitting'); btn.innerHTML = 'Sending…'; }
 
-  /* ── Call API Gateway → Lambda → SES ── */
-  var API_URL = 'https://XXXXXXXXXX.execute-api.us-east-1.amazonaws.com/contact'; // ← paste your API Gateway URL here
+  /* ── Submit directly to Airtable ── */
+  var AIRTABLE_TOKEN   = 'YOUR_AIRTABLE_TOKEN';
+  var AIRTABLE_BASE_ID = 'app5ZcErLCXmQoslo';
+  var AIRTABLE_TABLE   = 'Submissions';
+  var AIRTABLE_URL     = 'https://api.airtable.com/v0/' + AIRTABLE_BASE_ID + '/' + encodeURIComponent(AIRTABLE_TABLE);
 
-  fetch(API_URL, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(payload)
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
-    if (btn) { btn.classList.remove('btn-submitting'); btn.innerHTML = origHTML; }
-    if (data.success) {
-      /* Show success banner */
-      if (successBanner) successBanner.classList.add('visible');
-      /* Clear all fields */
-      fields.forEach(function(el) { el.value = ''; el.classList.remove('field-valid', 'field-invalid'); });
-      if (needEl) needEl.selectedIndex = 0;
-      if (msgEl)  msgEl.value = '';
-      if (successBanner) successBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(function() { if (successBanner) successBanner.classList.remove('visible'); }, 6000);
-    } else {
-      alert('Something went wrong: ' + (data.message || 'Please email us at hello@net7.com'));
+  var record = {
+    fields: {
+      'Full Name':            payload.name,
+      'Email':                payload.email,
+      'Company':              payload.company,
+      'Tell Us What You Need': payload.need,
+      'Message':              payload.message
     }
+  };
+
+  fetch(AIRTABLE_URL, {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': 'Bearer ' + AIRTABLE_TOKEN
+    },
+    body: JSON.stringify(record)
+  })
+  .then(function(res) {
+    if (!res.ok) { return res.json().then(function(e) { throw e; }); }
+    return res.json();
+  })
+  .then(function() {
+    if (btn) { btn.classList.remove('btn-submitting'); btn.innerHTML = origHTML; }
+    /* Show success banner */
+    if (successBanner) successBanner.classList.add('visible');
+    /* Clear all fields */
+    fields.forEach(function(el) { el.value = ''; el.classList.remove('field-valid', 'field-invalid'); });
+    if (needEl) needEl.selectedIndex = 0;
+    if (msgEl)  msgEl.value = '';
+    if (successBanner) successBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(function() { if (successBanner) successBanner.classList.remove('visible'); }, 6000);
   })
   .catch(function(err) {
     if (btn) { btn.classList.remove('btn-submitting'); btn.innerHTML = origHTML; }
-    console.error('Form submit error:', err);
-    alert('Network error. Please email us directly at hello@net7.com');
+    console.error('Airtable submit error:', err);
+    alert('Something went wrong. Please email us directly at hello@net7.biz');
   });
 }
 
