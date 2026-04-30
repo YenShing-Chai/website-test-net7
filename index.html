@@ -2802,9 +2802,9 @@ function validateAndSubmit(e, form) {
       submittedAt: new Date().toISOString()
     })
   })
-  .then(function(res) {
-    if (!res.ok) { return res.json().then(function(e) { throw e; }); }
-    return res.json();
+.then(function(res) {
+    if (!res.ok) { return res.text().then(function(e) { throw e; }); }
+    return res.text();
   })
   .then(function() {
     if (btn) { btn.classList.remove('btn-submitting'); btn.innerHTML = origHTML; }
