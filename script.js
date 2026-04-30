@@ -833,6 +833,21 @@ function validateAndSubmit(e, form) {
 /* ================================================================
    REQUEST DEMO — navigate to home page & scroll to capture form
 ================================================================ */
+/* ================================================================
+   SCROLL TO CAPTURE FORM — used by Watch Demo + Footer Contact Us
+================================================================ */
+function scrollToCapture() {
+  if (typeof showPage === 'function') showPage('home');
+  setTimeout(function() {
+    var formWrap = document.querySelector('.capture-v2__form-wrap');
+    if (formWrap) {
+      formWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var firstInput = formWrap.querySelector('input:not([type="hidden"]), textarea, select');
+      if (firstInput) setTimeout(function() { firstInput.focus(); }, 500);
+    }
+  }, 150);
+}
+
 function openRequestDemo() {
   /* Close mobile menu if open */
   var mm = document.getElementById('mobileMenu');
